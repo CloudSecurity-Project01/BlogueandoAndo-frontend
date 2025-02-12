@@ -4,11 +4,13 @@ import { FaStar, FaExpand, FaExternalLinkAlt, FaEye, FaEyeSlash, FaTrash } from 
 import { useNavigate } from "react-router-dom";
 import CreatePostModal from "./CreatePostModal";
 import DOMPurify from "dompurify";
+import { useAuth } from "../context/AuthContext";
 
-const PostModal = ({ show, handleClose, post, username, handleUpdate, handleDelete }) => {
+const PostModal = ({ show, handleClose, post, handleUpdate, handleDelete }) => {
     const [editMode, setEditMode] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     if (!post) return null;
 
@@ -31,6 +33,8 @@ const PostModal = ({ show, handleClose, post, username, handleUpdate, handleDele
         setShowDeleteConfirm(false);
     };
 
+    console.log(post.is_public)
+
     return (
         <>
             <Modal 
@@ -47,8 +51,8 @@ const PostModal = ({ show, handleClose, post, username, handleUpdate, handleDele
                 <Modal.Body className="post-modal-body">
                     {!editMode ? (
                         <>
-                            <p><strong>Autor:</strong> {post.author}</p>
-                            <p><strong>Fecha:</strong> {post.date}</p>
+                            <p><strong>Autor:</strong> {post.user_name}</p>
+                            <p><strong>Fecha:</strong> {post.publication_date}</p>
 
                             <div className="mb-3">
                                 <strong>Calificación: </strong> 
@@ -73,7 +77,6 @@ const PostModal = ({ show, handleClose, post, username, handleUpdate, handleDele
                             handleClose={() => setEditMode(false)} 
                             handleSave={handleUpdate}
                             initialPost={post} 
-                            username={username}
                         />
                     )}
                 </Modal.Body>
@@ -88,13 +91,13 @@ const PostModal = ({ show, handleClose, post, username, handleUpdate, handleDele
                             >
                                 Editar en pantalla completa <FaExternalLinkAlt className="ms-1" />
                             </Button>
-                            {post.author === username && (
+                            {post.user_id === user?.id && (
                                 <Button 
                                     variant="light" 
                                     className="me-2 d-flex align-items-center"
                                 >
-                                    {post.visibility === "public" ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
-                                    <span className="ms-2">{post.visibility === "public" ? "Público" : "Privado"}</span>
+                                    {post.is_public ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
+                                    <span className="ms-2">{post.is_public ? "Público" : "Privado"}</span>
                                 </Button>
                             )}
                         </>
@@ -104,7 +107,7 @@ const PostModal = ({ show, handleClose, post, username, handleUpdate, handleDele
                                 Ver en pantalla completa <FaExpand className="ml-2" />
                             </Button>
                             <div className="ms-auto">
-                                {post.author === username && (
+                                {post.user_id === user?.id && (
                                     <>
                                         <Button variant="warning" onClick={() => setEditMode(true)}>
                                             Editar

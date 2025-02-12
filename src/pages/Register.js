@@ -1,21 +1,23 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
+import config from "../config";
 import "../styles/Login.css";
 
 const Register = () => {
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!username || !email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword) {
       setError("Ingresa todos los campos");
       return;
     }
@@ -25,27 +27,56 @@ const Register = () => {
       return;
     }
 
-    // Simulate authentication logic
-    console.log("Logging in with:", email, password);
-    setError(""); // Clear error on success
-    navigate('/home');
+    try {
+      setError("");
+      setSuccess("");
+
+      const response = await fetch(`${config.API_BASE_URL}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.detail || "Hubo un problema. Intenta nuevamente.");
+        return;
+      }
+
+      setSuccess(data.message || "Revisa tu bandeja de entrada para activar tu cuenta.");
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 5000);
+
+    } catch (err) {
+      setError("Hubo un problema al enviar el enlace. Inténtalo de nuevo.");
+    }
   };
 
   return (
-    <Container className="">
+    <Container>
       <Card className="p-4 shadow loginContainer">
-        <Card.Title className="text-center m-5">Nueva cuenta</Card.Title>
+        <Card.Title className="text-center m-5">
+          <h1>BlogueandoAndo</h1>
+          <p className="text-secondary">Nueva cuenta</p>
+        </Card.Title>
+        
         {error && <Alert variant="danger">{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
+
         <Form onSubmit={handleSubmit}>
-          <Form.Group controlId="formUsername">
-            <Form.Label>Usuario</Form.Label>
+          <Form.Group controlId="formname">
+            <Form.Label>Nombre</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Usuario"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Nombre"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </Form.Group>
+
           <Form.Group controlId="formEmail" className="mt-3">
             <Form.Label>Correo</Form.Label>
             <Form.Control
@@ -65,6 +96,7 @@ const Register = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Form.Group>
+
           <Form.Group controlId="formConfirmPassword" className="mt-3">
             <Form.Label>Confirmar contraseña</Form.Label>
             <Form.Control
@@ -79,7 +111,7 @@ const Register = () => {
             Crear cuenta
           </Button>
         </Form>
-        
+
         <Button
           variant="link"
           className="w-100 mt-3"

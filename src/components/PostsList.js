@@ -4,9 +4,12 @@ import { FaStar, FaEye, FaEyeSlash, FaChevronLeft, FaChevronRight } from "react-
 import PostModal from "./PostModal";
 import DOMPurify from "dompurify";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Modal.css";
 
-const PostsList = ({ showFilter, showMyPostsOnly, username, posts, handleUpdatePost, setSelectedPost, selectedPost, handleDeletePost }) => {
+const PostsList = ({ showFilter, showMyPostsOnly, posts, handleUpdatePost, setSelectedPost, selectedPost, handleDeletePost }) => {
+  
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -34,8 +37,8 @@ const PostsList = ({ showFilter, showMyPostsOnly, username, posts, handleUpdateP
 
   let filteredPosts = posts;
 
-  if (showMyPostsOnly && username) {
-    filteredPosts = filteredPosts.filter(post => post.author === username);
+  if (showMyPostsOnly && user) {
+    filteredPosts = filteredPosts.filter(post => post.user_id === user?.id);
   }
 
   if (selectedTags.length > 0) {
@@ -102,15 +105,15 @@ const PostsList = ({ showFilter, showMyPostsOnly, username, posts, handleUpdateP
           currentPosts.map((post, index) => (
             <Col md={4} key={index} className="mb-4">
               <Card className="shadow post-card position-relative" onClick={() => setSelectedPost(post)}>
-                {post.author === username && (
+                {post.user_id === user?.id && (
                   <div className="position-absolute top-0 end-0 p-2">
-                    {post.visibility === "public" ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
+                    {post.is_public ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
                   </div>
                 )}
 
                 <Card.Body>
                   <Card.Title className="post-title-preview">{post.title}</Card.Title>
-                  <Card.Subtitle className="mb-2 text-muted">Por {post.author} - {post.date}</Card.Subtitle>
+                  <Card.Subtitle className="mb-2 text-muted">Por {post.user_name} - {post.publication_date}</Card.Subtitle>
                   <div>
                     {[...Array(5)].map((_, i) => (
                       <FaStar key={i} color={i < post.rating ? "#ffc107" : "#e4e5e9"} />
@@ -137,7 +140,6 @@ const PostsList = ({ showFilter, showMyPostsOnly, username, posts, handleUpdateP
         show={selectedPost !== null} 
         handleClose={() => {setSelectedPost(null)}} 
         post={selectedPost} 
-        username={username}
         handleUpdate={handleUpdatePost}
         handleDelete={handleDeletePost}
       />

@@ -23,7 +23,7 @@ const Layout = () => {
             {user ? (
               <Dropdown align="end">
                 <Dropdown.Toggle as="div" className="d-flex align-items-center text-white" style={{ cursor: "pointer" }}>
-                  <span className="me-2">{user.username}</span>
+                  <span className="me-2">{user.user_name}</span>
                   <FaUserCircle size={24} color="white" />
                 </Dropdown.Toggle>
                 <Dropdown.Menu>

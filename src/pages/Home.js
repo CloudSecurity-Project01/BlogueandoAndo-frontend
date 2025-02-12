@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Container, Button } from "react-bootstrap";
 import { FaPlus, FaFilter } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext"; // Import Auth Context
+import { useAuth } from "../context/AuthContext";
 import PostsList from "../components/PostsList";
 import CreatePostModal from "../components/CreatePostModal";
+import config from "../config";
 
 const Home = () => {
   const { user } = useAuth();
-
+  console.log(user)
   const [showModal, setShowModal] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showMyPostsOnly, setShowMyPostsOnly] = useState(false);
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
 
-  useEffect(() => {
-    fetch("/postsData.json")
+  useEffect(() => {       
+    fetch(config.API_BASE_URL + "/posts")
       .then((response) => response.json())
       .then((data) => setPosts(data))
       .catch((error) => console.error("Error loading posts:", error));
@@ -25,7 +26,7 @@ const Home = () => {
     const newPostWithMeta = {
       ...newPost,
       id: posts.length + 1,
-      author: user?.username,
+      user_id: user?.id,
       date: new Date().toISOString().split("T")[0],
       rating: 0,
     };
@@ -76,7 +77,6 @@ const Home = () => {
       <PostsList
         showFilter={showFilter}
         showMyPostsOnly={showMyPostsOnly}
-        username={user?.username}
         posts={posts}
         handleUpdatePost={handleUpdatePost}
         setSelectedPost={handlePostSelect}

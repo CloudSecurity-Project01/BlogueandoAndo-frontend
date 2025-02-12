@@ -152,7 +152,7 @@ const FullPostView = () => {
                     <Button variant="light" onClick={() => navigate("/home")}>
                         <FaHome size={24} />
                     </Button>
-                    {user && (post.author === user.username) && (
+                    {user && (post.user_name === user.user_name) && (
                         isEditing ? (
                             <>
                                 <Button className="mx-2" variant="success" onClick={handleSave}>
@@ -193,7 +193,7 @@ const FullPostView = () => {
                 <h2 className="text-center mt-4">{post.title}</h2>
             )}
 
-            <p className="text-center text-secondary">{post.author} - {post.date}</p>
+            <p className="text-center text-secondary">{post.user_name} - {post.publication_date}</p>
 
             {/* Rating Display */}
             <div className="mb-3 d-flex align-items-center">
@@ -277,7 +277,7 @@ const FullPostView = () => {
             </div>
 
             {/* Rate Post Button (at the bottom) */}
-            {user?.username !== post.author && (
+            {user?.username !== post.user_name && (
                 <div className="text-center my-5">
                     <Button variant="primary" onClick={openRatingModal}>
                         Calificar este post

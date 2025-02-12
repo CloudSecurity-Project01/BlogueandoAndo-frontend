@@ -1,32 +1,33 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // Import Auth Context
+import { useAuth } from "../context/AuthContext";
 import "../styles/Login.css";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [email, setEmail] = useState("");  // State for password recovery email
-  const [isRecoveringPassword, setIsRecoveringPassword] = useState(false);  // Track if the user is in password recovery mode
+  const [email, setEmail] = useState("");  
+  const [isRecoveringPassword, setIsRecoveringPassword] = useState(false);
 
-  const { login } = useAuth(); // Get login function from context
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!username || !password) {
+  
+    if (!email || !password) {
       setError("Ingresa todos los campos");
       return;
     }
-
+  
     try {
-      await login(username, password); // Call login function
-      navigate("/home"); // Redirect to home
+      await login(email, password);
+      navigate("/home");
     } catch (err) {
-      setError("Usuario o contraseña incorrectos");
+      
+      const errorMessage = err.message || "Credenciales incorrectas";
+      setError(errorMessage);
     }
   };
 
@@ -61,32 +62,32 @@ const Login = () => {
     setError("");  // Clear any previous error
   };
 
-  const handleContinueWithoutLogin = () => {
-    // Allow user to go to home page without login
-    navigate("/home");
-  };
-
   return (
     <Container>
       <Card className="p-4 shadow loginContainer">
-        <Card.Title className="text-center m-5">Bienvenido</Card.Title>
+        <Card.Title className="text-center m-5">
+          <h1>BlogueandoAndo</h1>
+          <p className="text-secondary">{isRecoveringPassword ? "Recuperar contraseña" : "Iniciar sesión" }</p>
+        </Card.Title>
         {error && <Alert variant="danger">{error}</Alert>}
         {!isRecoveringPassword ? (
           <>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="formUsername">
-                <Form.Label>Usuario</Form.Label>
+              <Form.Group controlId="formEmail">
+                <Form.Label>Correo</Form.Label>
                 <Form.Control
+                  name="formEmail"
                   type="text"
-                  placeholder="Usuario"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Correo"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Form.Group>
 
               <Form.Group controlId="formPassword" className="mt-3">
                 <Form.Label>Contraseña</Form.Label>
                 <Form.Control
+                  name="formPassword"
                   type="password"
                   placeholder="Contraseña"
                   value={password}
@@ -101,13 +102,11 @@ const Login = () => {
 
             {/* Password recovery link */}
             <div className="text-center">
+              <Button variant="link" onClick={() => navigate("/register")}>Registrarse</Button>
               <Button variant="link" onClick={togglePasswordRecovery}>Recuperar contraseña</Button>
             </div>
 
-            {/* Button to continue to Home without login */}
-            <Button variant="light" onClick={handleContinueWithoutLogin} className="w-100 mt-3">
-              Continuar sin iniciar sesión
-            </Button>
+            <Button className="mx-auto mt-5 w-50"  variant="light" onClick={() => navigate("/home")}>Continuar sin iniciar sesión</Button>
           </>
         ) : (
           <>

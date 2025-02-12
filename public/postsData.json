@@ -2,211 +2,211 @@
   {
     "id": 0,
     "title": "The Journey Through the Quill Editor: A Story of Formatting",
-    "author": "Claudia Díaz",
+    "user_name": "Claudia Díaz",
     "content": "<h1>The Ultimate Guide to Quill Editor</h1><p>Quill is a powerful rich text editor that can be used to create rich, formatted content right within your web applications. This post will showcase different formatting options, from basic text styling to adding images and lists.</p><h2>Text Formatting</h2><p>Text formatting is an essential feature of any rich text editor. In Quill, you can apply <strong>bold</strong>, <em>italic</em>, <u>underline</u>, and <strong><em>bold italic</em></strong> styles to your text with simple toolbar buttons.</p><p>For example, <strong>this text is bold</strong>, <em>this text is italic</em>, and <u>this text is underlined</u>.</p><h3>Lists</h3><ul><li>First item in the list</li><li>Second item in the list</li><li>Third item with <strong>bold</strong> text</li></ul><p>Quill also supports <ol><li>numbered lists</li><li>with proper styling</li><li>and nested items</li></ol>.</p><h2>Images and Embedding</h2><p>In addition to text formatting, you can easily embed images. Below is an image added using the Quill editor.</p><img src='https://via.placeholder.com/800x400.png?text=Quill+Editor+Example' alt='Example Image' style='width:100%; height:auto;'><p>This is an image that was embedded using the Quill editor. You can resize it, align it, and apply other styles as needed.</p><h3>Code Snippet</h3><pre><code class='language-javascript'>const greeting = 'Hello, Quill!';</code></pre><p>Here's a simple code snippet in JavaScript. Quill supports code block formatting with syntax highlighting, making it easy to showcase code snippets directly in your post.</p><h2>Conclusion</h2><p>Quill is an incredibly versatile rich text editor that offers various ways to format text, add images, and even embed code. Whether you're building a blog, documentation, or any other type of content, Quill can help you create engaging posts with ease.</p><p><strong>Thanks for reading!</strong></p>",
     "rating": 5,
-    "date": "2024-02-09",
+    "publication_date": "2024-02-09",
     "tags": ["Quill", "Text Editor", "Rich Text", "Web Development"],
-    "visibility": "public"
+    "is_public": true
   },  
   {
     "id": 1,
     "title": "Introducción a React",
-    "author": "Juan Pérez",
+    "user_name": "Juan Pérez",
     "content": "React es una biblioteca de JavaScript...",
     "rating": 5,
-    "date": "2024-02-06",
+    "publication_date": "2024-02-06",
     "tags": ["JavaScript", "React", "Frontend"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 2,
     "title": "Guía de Flexbox en CSS",
-    "author": "María López",
+    "user_name": "María López",
     "content": "Flexbox es un modelo de diseño...",
     "rating": 4,
-    "date": "2024-02-05",
+    "publication_date": "2024-02-05",
     "tags": ["CSS", "Flexbox", "Diseño Web"],
-    "visibility": "private"
+    "is_public": false
   },
   {
     "id": 3,
     "title": "Buenas Prácticas en Node.js",
-    "author": "Diego",
+    "user_name": "Diego",
     "content": "Descubre cómo escribir código limpio...",
     "rating": 4,
-    "date": "2024-02-03",
+    "publication_date": "2024-02-03",
     "tags": ["Node.js", "Backend", "Buenas Prácticas"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 4,
     "title": "El Futuro de JavaScript",
-    "author": "Carlos García",
+    "user_name": "Carlos García",
     "content": "JavaScript está evolucionando rápidamente...",
     "rating": 5,
-    "date": "2024-02-01",
+    "publication_date": "2024-02-01",
     "tags": ["JavaScript", "Futuro", "Tecnología"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 5,
     "title": "CSS Grid: Una Alternativa a Flexbox",
-    "author": "Ana Sánchez",
+    "user_name": "Ana Sánchez",
     "content": "CSS Grid es una poderosa herramienta para crear diseños...",
     "rating": 4,
-    "date": "2024-01-30",
+    "publication_date": "2024-01-30",
     "tags": ["CSS", "Grid", "Diseño Web"],
-    "visibility": "private"
+    "is_public": false
   },
   {
     "id": 6,
     "title": "Desarrollo Web Responsivo",
-    "author": "José Rodríguez",
+    "user_name": "José Rodríguez",
     "content": "Aprende cómo hacer que tu sitio web se vea bien en cualquier dispositivo...",
     "rating": 3,
-    "date": "2024-01-25",
+    "publication_date": "2024-01-25",
     "tags": ["Responsivo", "HTML", "CSS"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 7,
     "title": "Fundamentos de Python",
-    "author": "Pablo Fernández",
+    "user_name": "Pablo Fernández",
     "content": "Python es un lenguaje de programación muy popular y fácil de aprender...",
     "rating": 5,
-    "date": "2024-01-20",
+    "publication_date": "2024-01-20",
     "tags": ["Python", "Backend", "Programación"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 8,
     "title": "Introducción a Docker",
-    "author": "Claudia Díaz",
+    "user_name": "Claudia Díaz",
     "content": "Docker es una plataforma que permite crear y gestionar contenedores...",
     "rating": 4,
-    "date": "2024-01-15",
+    "publication_date": "2024-01-15",
     "tags": ["Docker", "DevOps", "Contenedores"],
-    "visibility": "private"
+    "is_public": false
   },
   {
     "id": 9,
     "title": "Principios de Diseño UX/UI",
-    "author": "Carlos García",
+    "user_name": "Carlos García",
     "content": "El diseño de experiencia de usuario (UX) y la interfaz de usuario (UI) son fundamentales...",
     "rating": 5,
-    "date": "2024-01-10",
+    "publication_date": "2024-01-10",
     "tags": ["UX/UI", "Diseño", "Tecnología"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 10,
     "title": "Fundamentos de Bases de Datos Relacionales",
-    "author": "Diego",
+    "user_name": "Diego",
     "content": "Las bases de datos relacionales son un tipo de base de datos que almacena datos...",
     "rating": 3,
-    "date": "2024-01-05",
+    "publication_date": "2024-01-05",
     "tags": ["Base de Datos", "SQL", "Backend"],
-    "visibility": "private"
+    "is_public": false
   },
   {
     "id": 11,
     "title": "Arquitectura de Software",
-    "author": "Laura Martínez",
+    "user_name": "Laura Martínez",
     "content": "La arquitectura de software es el proceso de definir una estructura...",
     "rating": 4,
-    "date": "2024-01-01",
+    "publication_date": "2024-01-01",
     "tags": ["Arquitectura", "Software", "Tecnología"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 12,
     "title": "Mejores Prácticas en Programación Funcional",
-    "author": "José Rodríguez",
+    "user_name": "José Rodríguez",
     "content": "La programación funcional es un estilo de programación que enfatiza el uso de funciones puras...",
     "rating": 5,
-    "date": "2024-02-01",
+    "publication_date": "2024-02-01",
     "tags": ["Programación Funcional", "JavaScript", "Software"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 13,
     "title": "JavaScript Asíncrono y Promesas",
-    "author": "Ana Sánchez",
+    "user_name": "Ana Sánchez",
     "content": "El manejo asíncrono en JavaScript es clave para realizar operaciones sin bloquear el hilo principal...",
     "rating": 4,
-    "date": "2024-01-15",
+    "publication_date": "2024-01-15",
     "tags": ["JavaScript", "Asíncrono", "Promesas"],
-    "visibility": "private"
+    "is_public": false
   },
   {
     "id": 14,
     "title": "Aprendiendo Git y GitHub",
-    "author": "Claudia Díaz",
+    "user_name": "Claudia Díaz",
     "content": "Git es un sistema de control de versiones distribuido que ayuda a gestionar proyectos de software...",
     "rating": 5,
-    "date": "2024-01-12",
+    "publication_date": "2024-01-12",
     "tags": ["Git", "GitHub", "Desarrollo"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 15,
     "title": "Introducción a la Inteligencia Artificial",
-    "author": "Juan Pérez",
+    "user_name": "Juan Pérez",
     "content": "La Inteligencia Artificial (IA) está transformando el mundo en muchas industrias...",
     "rating": 4,
-    "date": "2024-01-09",
+    "publication_date": "2024-01-09",
     "tags": ["IA", "Tecnología", "Futuro"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 16,
     "title": "Desarrollo de Aplicaciones Móviles con Flutter",
-    "author": "María López",
+    "user_name": "María López",
     "content": "Flutter es un framework para desarrollar aplicaciones móviles multiplataforma...",
     "rating": 4,
-    "date": "2024-02-07",
+    "publication_date": "2024-02-07",
     "tags": ["Flutter", "Móviles", "Desarrollo"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 17,
     "title": "Gestión de Proyectos Ágiles",
-    "author": "Carlos García",
+    "user_name": "Carlos García",
     "content": "La metodología ágil permite gestionar proyectos de manera flexible y eficiente...",
     "rating": 3,
-    "date": "2024-02-10",
+    "publication_date": "2024-02-10",
     "tags": ["Agile", "Gestión", "Proyectos"],
-    "visibility": "private"
+    "is_public": false
   },
   {
     "id": 18,
     "title": "Redes Neuronales en Machine Learning",
-    "author": "Diego",
+    "user_name": "Diego",
     "content": "Las redes neuronales son el corazón del aprendizaje profundo...",
     "rating": 5,
-    "date": "2024-01-11",
+    "publication_date": "2024-01-11",
     "tags": ["Machine Learning", "AI", "Neuronal"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 19,
     "title": "JavaScript y React para Principiantes",
-    "author": "Pablo Fernández",
+    "user_name": "Pablo Fernández",
     "content": "Este curso está diseñado para aquellos que desean aprender JavaScript y React desde cero...",
     "rating": 4,
-    "date": "2024-02-03",
+    "publication_date": "2024-02-03",
     "tags": ["JavaScript", "React", "Frontend"],
-    "visibility": "public"
+    "is_public": true
   },
   {
     "id": 20,
     "title": "Introducción a la Programación con Python",
-    "author": "María López",
+    "user_name": "María López",
     "content": "Python es uno de los lenguajes de programación más populares y fáciles de aprender...",
     "rating": 5,
-    "date": "2024-01-02",
+    "publication_date": "2024-01-02",
     "tags": ["Python", "Programación", "Backend"],
-    "visibility": "private"
+    "is_public": false
   }
 ]

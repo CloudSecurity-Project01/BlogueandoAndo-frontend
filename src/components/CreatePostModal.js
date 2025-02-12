@@ -2,16 +2,18 @@ import React, { useState, useEffect, useRef } from "react";
 import { Modal, Form, Button, InputGroup, Badge, ListGroup } from "react-bootstrap";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import QuillEditor from "./QuillEditor";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Modal.css";
 
-const CreatePostModal = ({ show, handleClose, handleSave, initialPost = null, username }) => {
+const CreatePostModal = ({ show, handleClose, handleSave, initialPost = null }) => {
     const [title, setTitle] = useState(initialPost ? initialPost.title : '');
     const [content, setContent] = useState(initialPost ? initialPost.content : '');
     const [selectedTags, setSelectedTags] = useState(initialPost ? initialPost.tags : []);
-    const [visibility, setVisibility] = useState(initialPost ? initialPost.visibility : "public");
+    const [is_public, SetIsPublic] = useState(initialPost ? initialPost.is_public : true);
     const [tagInput, setTagInput] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const inputRef = useRef(null);
+    const { user } = useAuth();
 
     const allTags = ["JavaScript", "React", "Frontend", "CSS", "Flexbox", "Node.js", "Backend"];
 
@@ -45,7 +47,7 @@ const CreatePostModal = ({ show, handleClose, handleSave, initialPost = null, us
                 title,
                 content,
                 tags: selectedTags,
-                visibility: initialPost?.author === username ? visibility : initialPost.visibility,
+                is_public: initialPost?.user_id === user?.id ? is_public : initialPost.is_public,
             });
             handleClose();
         }
@@ -117,10 +119,10 @@ const CreatePostModal = ({ show, handleClose, handleSave, initialPost = null, us
                 </Form>
             </Modal.Body>
             <Modal.Footer className="d-flex justify-content-between">
-                {initialPost?.author === username && (
-                    <Button variant="light" className="me-2 d-flex align-items-center" onClick={() => setVisibility(visibility === "public" ? "private" : "public")}>
-                        {visibility === "public" ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
-                        <span className="ms-2">{visibility === "public" ? "Público" : "Privado"}</span>
+                {initialPost?.user_id === user?.id && (
+                    <Button variant="light" className="me-2 d-flex align-items-center" onClick={() => SetIsPublic(!is_public)}>
+                        {is_public ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
+                        <span className="ms-2">{is_public ? "Público" : "Privado"}</span>
                     </Button>
                 )}
                 <div className="ms-auto">
