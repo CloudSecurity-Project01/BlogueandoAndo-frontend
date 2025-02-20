@@ -57,11 +57,3 @@
 .custom-dialog {
     filter: blur(2px);
 }
-
-.dropdown-menu {
-    min-width: 65px !important;
-}
-
-.dropdown-toggle {
-    min-width: 65px !important;
-}
