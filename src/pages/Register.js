@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
-import config from "../config";
 import "../styles/Login.css";
+import { registerUser } from "../services/userService";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -31,12 +31,7 @@ const Register = () => {
       setError("");
       setSuccess("");
 
-      const response = await fetch(`${config.API_BASE_URL}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-
+      const response = await registerUser(name, email, password);
       const data = await response.json();
 
       if (!response.ok) {
@@ -46,9 +41,7 @@ const Register = () => {
 
       setSuccess(data.message || "Revisa tu bandeja de entrada para activar tu cuenta.");
 
-      setTimeout(() => {
-        navigate('/login');
-      }, 5000);
+      setTimeout(() => { navigate('/login') }, 5000);
 
     } catch (err) {
       setError("Hubo un problema al enviar el enlace. Inténtalo de nuevo.");

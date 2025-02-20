@@ -1,48 +1,99 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Container, Modal, Button, Badge, Form, InputGroup, ListGroup } from "react-bootstrap";
 import { FaArrowLeft, FaArrowRight, FaStar, FaHome, FaEdit, FaSave, FaTimes, FaTrash } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../services/authService";
 import DOMPurify from "dompurify";
-import QuillEditor from "./QuillEditor";
+import QuillEditor from "../components/QuillEditor";
+import Error from "../components/Error";
+import { createPost, deletePost, getPostById, updatePost } from "../services/postService";
+import { getTags } from "../services/tagService";
 
-const FullPostView = () => {
+const Post = () => {
     const { user } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
-    const [post, setPost] = useState();
+    const location = useLocation();
+    const [post, setPost] = useState({
+        title: "",
+        content: "",
+        tags: [],
+        is_public: true,
+    });
     const [posts, setPosts] = useState([]);
     const [currentPostIndex, setCurrentPostIndex] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [editedPost, setEditedPost] = useState(null);
+    const [editedPost, setEditedPost] = useState(post);
     const [tagInput, setTagInput] = useState("");
+    const [allTags, setAllTags] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [userRating, setUserRating] = useState(null);
+    const [error, setError] = useState(null);
 
     const inputRef = useRef(null);
 
-    const allTags = ["JavaScript", "React", "Frontend", "CSS", "Flexbox", "Node.js", "Backend"];
+    useEffect(() => {
+        getTags()
+            .then(setAllTags)
+            .catch((error) => {
+                console.error("Error getting tags list", error)    
+            });
+    }, []);
 
     useEffect(() => {
-        fetch("/postsData.json")
-            .then((response) => response.json())
-            .then((data) => {
-                setPosts(data);
-                const postData = data.find((post) => post.id === parseInt(id));
-                setPost(postData);
-                setEditedPost(postData);
-                setCurrentPostIndex(data.findIndex((post) => post.id === parseInt(id)));
-            })
-            .catch((error) => console.error("Error loading post:", error));
-    }, [id]);
+        if (!id) return;
+
+        if (id === "new") {
+            if (!user) {
+                setError("Unauthorized");
+            } else {
+                setIsEditing(true);
+                if (location.state) {
+                    const { title, content, tags } = location.state;
+                    setEditedPost({
+                        title,
+                        content,
+                        tags,
+                        is_public: true
+                    });
+                }
+            }
+            setError(null);
+            return;
+        }
+        setError(null);
+        getPostById(id)
+            .then(setPost)
+            .catch((error) => {
+                setError("NotFound");
+                console.error("Error getting post by ID", error);
+            });
+
+    }, [id, user, location.state]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (user && params.get("edit") === "true") {
+            if (location.state) {
+                const { title, content, tags, is_public } = location.state;
+                setEditedPost({
+                    ...post,
+                    title: title,
+                    content: content,
+                    tags: tags,
+                    is_public: is_public,
+                });
+                setIsEditing(true);
+            }
+        }
+    }, [location.search, user, location.state, post]);
 
     const handleBack = () => {
         const prevPostIndex = (currentPostIndex - 1 + posts.length) % posts.length;
         navigate(`/post/${posts[prevPostIndex].id}`);
     };
-
 
     const handleForward = () => {
         const nextPostIndex = (currentPostIndex + 1) % posts.length;
@@ -51,25 +102,45 @@ const FullPostView = () => {
 
     const handleEdit = () => {
         setIsEditing(true);
+        setEditedPost(post);
     };
 
     const handleSave = () => {
-        setPost(editedPost);
-        setIsEditing(false);
+        if (!editedPost.title.trim()) {
+            return alert("Por favor, ingresa un título.");
+        }
+
+        if (!editedPost.content.trim()) {
+            return alert("Por favor, ingresa contenido.");
+        }
+
+        const postAction = id === "new"
+            ? createPost(editedPost.title, editedPost.content, editedPost.tags, user.id)
+            : updatePost({ ...editedPost, id: post.id }, user);
+
+        postAction
+            .then((data) => {
+                setIsEditing(false);
+                id === "new" ? navigate(`/post/${data.id}`) : setPost(data);
+            })
+            .catch((error) => {
+                console.error(`Error ${id === "new" ? "creating" : "updating"} post`, error);
+                alert(`Hubo un error al ${id === "new" ? "crear" : "actualizar"} la publicación. Intenta de nuevo.`);
+            });
     };
 
     const handleCancel = () => {
-        setEditedPost(post);
         setIsEditing(false);
+        setEditedPost(post);
     };
 
     const cancelDelete = () => {
         setShowDeleteConfirm(false);
     };
 
-    const confirmDelete = () => {
-        setShowDeleteConfirm(false);
-        setPosts(posts.filter((p) => p.id !== post.id));
+    const confirmDelete = (postId) => {
+        deletePost(postId);
+        setPosts(posts.filter((post) => post.id !== postId));
         navigate("/home");
     };
 
@@ -82,7 +153,7 @@ const FullPostView = () => {
         if (!editedPost.tags.some((t) => t.toLowerCase() === normalizedTag)) {
             setEditedPost((prevPost) => ({
                 ...prevPost,
-                tags: [...prevPost.tags, tag] // Keep original case
+                tags: [...prevPost.tags, tag]
             }));
         }
         setTagInput("");
@@ -104,7 +175,7 @@ const FullPostView = () => {
 
     const openRatingModal = () => {
         setShowRatingModal(true);
-        setUserRating(null); // Reset previous rating
+        setUserRating(null);
     };
 
     const closeRatingModal = () => {
@@ -112,7 +183,7 @@ const FullPostView = () => {
     };
 
     const submitRating = async () => {
-        if (userRating === null) return; // Ensure a rating is selected
+        if (userRating === null) return;
 
         const newAverageRating = (post.rating * post.votes + userRating) / (post.votes + 1);
 
@@ -138,8 +209,12 @@ const FullPostView = () => {
         ? allTags.filter((tag) => tag.toLowerCase().includes(tagInput.toLowerCase()) && !editedPost.tags.some((t) => t.toLowerCase() === tag.toLowerCase()))
         : [];
 
-    if (!post) {
+    if (!post && !error) {
         return <div>Loading...</div>;
+    }
+
+    if (["NotFound", "Unauthorized"].includes(error)) {
+        return <Error type={error} />;
     }
 
     return (
@@ -171,8 +246,6 @@ const FullPostView = () => {
                                     <FaTrash className="me-2" /> Eliminar
                                 </Button>
                             </>
-
-
                         )
                     )}
                 </div>
@@ -181,7 +254,6 @@ const FullPostView = () => {
                 </Button>
             </div>
 
-            {/* Title */}
             {isEditing ? (
                 <Form.Control
                     type="text"
@@ -193,26 +265,29 @@ const FullPostView = () => {
                 <h2 className="text-center mt-4">{post.title}</h2>
             )}
 
-            <p className="text-center text-secondary">{post.user_name} - {post.publication_date}</p>
+            {!isEditing && (
+                <>
+                    <p className="text-center text-secondary">{post.user_name} - {post.publication_date}</p>
 
-            {/* Rating Display */}
-            <div className="mb-3 d-flex align-items-center">
-                <strong>Calificación:</strong>
-                <div className="ms-2">
-                    {[...Array(5)].map((_, i) => (
-                        <FaStar
-                            key={i}
-                            color={i < Math.round(post.rating) ? "#ffc107" : "#e4e5e9"}
-                            style={{ fontSize: "20px" }}
-                        />
-                    ))}
-                    <span className="ms-2 text-muted">{post.rating.toFixed(1)}</span>
-                </div>
-            </div>
+                    <div className="d-flex align-items-center">
+                        <strong>Calificación:</strong>
+                        <div className="ms-2">
+                            {[...Array(5)].map((_, i) => (
+                                <FaStar
+                                    key={i}
+                                    color={i < Math.round(post.rating) ? "#ffc107" : "#e4e5e9"}
+                                    style={{ fontSize: "20px" }}
+                                />
+                            ))}
+                            <span className="ms-2 text-muted">{post.rating?.toFixed(1)}</span>
+                        </div>
+                    </div>
+                </>
+            )}
 
-            {/* Tags */}
-            <div className="mb-3 position-relative">
-                <strong>Etiquetas: </strong>
+
+            <div className="my-3 position-relative">
+                {(isEditing || post.tags?.length > 0) && (<strong>Etiquetas: </strong>)}
                 {isEditing ? (
                     <>
                         <InputGroup>
@@ -258,14 +333,14 @@ const FullPostView = () => {
                         </div>
                     </>
                 ) : (
-                    post.tags.map((tag, i) => (
+                    post.tags?.map((tag, i) => (
                         <Badge key={i} bg="secondary" className="me-1">{tag}</Badge>
                     ))
                 )}
             </div>
 
             {/* Content */}
-            <div className="my-5">
+            <div className="ql-editor my-5">
                 {isEditing ? (
                     <QuillEditor
                         value={editedPost.content}
@@ -276,8 +351,16 @@ const FullPostView = () => {
                 )}
             </div>
 
-            {/* Rate Post Button (at the bottom) */}
-            {user?.username !== post.user_name && (
+            {id === "new" && (
+                <div className="ms-auto text-center">
+                    <Button variant="secondary" onClick={() => { navigate("/home") }}>Cancelar</Button>
+                    <Button className="mx-2" variant="primary" onClick={handleSave}>
+                        <FaSave /> Guardar
+                    </Button>
+                </div>
+            )}
+
+            {user?.id !== post.user_id && !isEditing && (
                 <div className="text-center my-5">
                     <Button variant="primary" onClick={openRatingModal}>
                         Calificar este post
@@ -285,7 +368,6 @@ const FullPostView = () => {
                 </div>
             )}
 
-            {/* Delete Confirmation Modal */}
             <Modal show={showDeleteConfirm} onHide={cancelDelete} backdrop="static" keyboard={false} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar eliminación</Modal.Title>
@@ -329,4 +411,4 @@ const FullPostView = () => {
     );
 };
 
-export default FullPostView;
+export default Post;

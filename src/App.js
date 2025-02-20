@@ -1,11 +1,12 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./services/authService";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
-import FullPostView from "./components/FullPostView";
+import Post from "./pages/Post";
 import Layout from "./components/Layout";
+import Error from "./components/Error";
 import "./App.css";
 
 function App() {
@@ -19,7 +20,8 @@ function App() {
 
           <Route element={<Layout />}>
             <Route path="/home" element={<Home />} />
-            <Route path="/post/:id" element={<FullPostView />} />
+            <Route path="/post/:id" element={<Post />} />
+            <Route path="*" element={<Error type="NotFound"/>} />
           </Route>
         </Routes>
       </Router>

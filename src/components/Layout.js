@@ -2,7 +2,7 @@ import React from "react";
 import { Navbar, Nav, Container, Dropdown, Button } from "react-bootstrap";
 import { FaUserCircle } from "react-icons/fa";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../services/authService";
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -11,6 +11,7 @@ const Layout = () => {
   const handleLogout = () => {
     logout();
     navigate("/home");
+    window.location.reload();
   };
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../services/authService";
 import "../styles/Login.css";
 
 const Login = () => {
@@ -25,7 +25,6 @@ const Login = () => {
       await login(email, password);
       navigate("/home");
     } catch (err) {
-      
       const errorMessage = err.message || "Credenciales incorrectas";
       setError(errorMessage);
     }
@@ -47,8 +46,8 @@ const Login = () => {
 
       if (response.ok) {
         alert("Te hemos enviado un enlace para recuperar tu contraseña.");
-        setEmail("");  // Clear the email input after sending
-        setIsRecoveringPassword(false);  // Hide recovery form
+        setEmail("");
+        setIsRecoveringPassword(false);
       } else {
         setError("Hubo un problema al enviar el enlace. Inténtalo de nuevo.");
       }
@@ -59,7 +58,7 @@ const Login = () => {
 
   const togglePasswordRecovery = () => {
     setIsRecoveringPassword(!isRecoveringPassword);
-    setError("");  // Clear any previous error
+    setError("");
   };
 
   return (
