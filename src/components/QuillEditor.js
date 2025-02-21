@@ -2,7 +2,7 @@ import React from "react";
 import ReactQuill, { Quill } from "react-quill";
 import ImageResize from 'quill-image-resize-module-react';
 import 'react-quill/dist/quill.snow.css'; 
-import '../styles/Modal.css'
+import '../styles/styles.css'
 
 const PostContent = ({ value, onChange }) => {
   return (

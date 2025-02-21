@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../services/authService";
-import "../styles/Login.css";
+import "../styles/styles.css";
 
 const Login = () => {
   const [password, setPassword] = useState("");

@@ -9,10 +9,9 @@ import { createPost } from "../services/postService";
 import { updatePost } from "../services/postService";
 import { getTags } from "../services/tagService";
 
-const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
+const PostModal = ({ show, handleClose, post, handleDelete, mode, setMode }) => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [mode, setMode] = useState(initMode);
     const [tagInput, setTagInput] = useState('');
     const [allTags, setAllTags] = useState([]);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -25,6 +24,7 @@ const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
 
     useEffect(() => {
         if (show) {
+            console.log("MODE: ", mode)
             if (mode === "edit" && post) {
                 setTitle(post.title);
                 setContent(post.content);
@@ -38,15 +38,16 @@ const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
     }, [show, mode, post]);
 
     useEffect(() => {
-    if (mode === "edit" || mode === "create") {
-        getTags(1, -1)
-        .then((data) => {
-            setAllTags(data.tags)
-        })
-        .catch((error) => {
-            console.error("Error getting tags list", error)
-        });
-    }
+        console.log("POST MODAL MODE:", mode)
+        if (mode === "edit" || mode === "create") {
+            getTags(1, -1)
+                .then((data) => {
+                    setAllTags(data.tags)
+                })
+                .catch((error) => {
+                    console.error("Error getting tags list", error)
+                });
+        }
     }, [mode]);
 
     const handleFullScreenCreate = () => {
@@ -109,36 +110,36 @@ const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
         if (!title.trim()) {
             return alert("Por favor, ingresa un título.");
         }
-        
+
         if (!content.trim()) {
             return alert("Por favor, ingresa contenido.");
         }
-    
+
         const postData = {
             title,
             content,
             tags: selectedTags,
             is_public
         };
-    
+
         const postAction = mode === "create"
             ? createPost(title, content, selectedTags, user.id)
             : updatePost({ ...postData, id: post.id }, user);
-    
+
         postAction
             .then((data) => {
                 setTitle(data.title);
                 setContent(data.content);
                 setSelectedTags(data.tags || []);
                 if (mode === "edit") setIsPublic(data.is_public);
+                handleClose(data, mode === "create");
                 setMode("view");
-                handleClose(data);
             })
             .catch((error) => {
                 console.error(`Error ${mode === "create" ? "creating" : "updating"} post`, error);
                 alert(`Hubo un error al ${mode === "create" ? "crear" : "actualizar"} la publicación. Intenta de nuevo.`);
             });
-    };    
+    };
 
     const filteredSuggestions = tagInput
         ? allTags.filter((tag) => tag.toLowerCase().includes(tagInput.toLowerCase()) && !selectedTags.some((t) => t.toLowerCase() === tag.toLowerCase()))
@@ -200,7 +201,7 @@ const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
                                         onChange={(e) => {
                                             setTagInput(e.target.value);
                                             setShowSuggestions(true);
-                                        }}  
+                                        }}
                                         onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                         onKeyDown={handleKeyDown}
                                         placeholder="Escribe para añadir etiquetas"
@@ -279,7 +280,6 @@ const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
                 </Modal.Footer>
             </Modal>
 
-            {/* Confirmation Modal for Deleting Post */}
             <Modal show={showDeleteConfirm} onHide={cancelDelete} backdrop="static" keyboard={false} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar eliminación</Modal.Title>

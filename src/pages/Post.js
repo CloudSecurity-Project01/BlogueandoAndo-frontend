@@ -320,7 +320,7 @@ const Post = () => {
                         </InputGroup>
 
                         {showSuggestions && filteredSuggestions.length > 0 && (
-                            <ListGroup className="mt-1 position-absolute w-100 shadow-lg" style={{ zIndex: 10, backgroundColor: "white" }}>
+                            <ListGroup className="mt-1 position-absolute w-100 shadow-lg" style={{ zIndex: 10, backgroundColor: "white", maxHeight: "200px", overflowY: "scroll" }}>
                                 {filteredSuggestions.map((tag, index) => (
                                     <ListGroup.Item
                                         key={index}

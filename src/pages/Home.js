@@ -6,15 +6,18 @@ import PostsList from "../components/PostsList";
 import PostModal from "../components/PostModal";
 import { useLocation } from "react-router-dom";
 import { deletePost, getPosts } from "../services/postService";
-import "../styles/Modal.css";
+import "../styles/styles.css";
 import { getTags } from "../services/tagService";
 import PaginationComponent from "../components/PaginationComponent";
+import TagsModal from "../components/TagsModal";
 
 
 const Home = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const [showModal, setShowModal] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [showTagsModal, setShowTagsModal] = useState(false);
+  const [modalMode, setModalMode] = useState("view");
   const [showFilter, setShowFilter] = useState(false);
   const [showMyPostsOnly, setShowMyPostsOnly] = useState(false);
   const [posts, setPosts] = useState([]);
@@ -55,9 +58,9 @@ const Home = () => {
     }
   }, [showFilter]);
 
-  const handleSavePost = () => {
-
-  };
+  useEffect(()=> {
+    console.log("POSTS: ", posts)
+  }, [posts])
 
   const clearFilters = () => {
     setSelectedTags([])
@@ -75,17 +78,24 @@ const Home = () => {
     setSelectedTags(selectedTags.filter((t) => t !== tag));
   };
 
-  const handleClose = (postData) => {
+  const handleClosePostModal = (postData, isNew) => {
     if (postData && postData.title) {
       setSelectedPost(postData)
-      setPosts(prevPosts =>
-        prevPosts.map(post => (post.id === postData.id ? postData : post))
-      );
+      console.log("isNew", isNew)
+      if (isNew) {
+        setPosts((prevPosts) => [...prevPosts, postData]);
+      } else {
+        setPosts(prevPosts => prevPosts.map(post => (post.id === postData.id ? postData : post)));
+      }
     } else {
       setSelectedPost(null)
     }
-    setShowModal(false)
+    setShowPostModal(false)
   };
+
+  const handleCloseTagsModal = () => {
+    setShowTagsModal(false)
+  }
 
   const handleDeletePost = (postId) => {
     deletePost(postId);
@@ -94,7 +104,7 @@ const Home = () => {
   };
 
   const handleShowAllTags = () => {
-
+    setShowTagsModal(true)
   };
 
   return (
@@ -114,7 +124,7 @@ const Home = () => {
         <div className="ms-auto">
 
           {user && (
-            <Button variant="primary" onClick={() => { setShowModal(true); }}>
+            <Button variant="primary" onClick={() => { setShowPostModal(true); setModalMode("create")}}>
               <FaPlus /> Nueva
             </Button>
           )}
@@ -209,20 +219,29 @@ const Home = () => {
 
       {user && (
         <PostModal
-          show={showModal}
-          handleClose={handleClose}
+          show={showPostModal}
+          handleClose={handleClosePostModal}
           handleDelete={handleDeletePost}
-          initMode="create"
+          mode={modalMode}
+          setMode={setModalMode}
         />
       )}
 
       <PostsList
         posts={posts}
-        handleSubmit={handleSavePost}
-        handleCloseModal={handleClose}
+        handleCloseModal={handleClosePostModal}
         setSelectedPost={setSelectedPost}
         selectedPost={selectedPost}
         handleDeletePost={handleDeletePost}
+        modalMode={modalMode}
+        setModalMode={setModalMode}
+      />
+
+      <TagsModal
+        show={showTagsModal}
+        handleClose={handleCloseTagsModal}
+        selectedTags={selectedTags}
+        setSelectedTags={setSelectedTags}
       />
 
       <PaginationComponent currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} totalItems={totalItems} pageSize={pageSize} setPageSize={setPageSize} />

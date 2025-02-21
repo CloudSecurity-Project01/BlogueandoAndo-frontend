@@ -4,15 +4,14 @@
 }
 
 .quill-editor .ql-container {
-    //border: 0;
-    border-bottom-left-radius: 12px;  /* Rounded corners for the editor's container */
-    border-bottom-right-radius: 12px;  /* Rounded corners for the editor's container */
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
     min-height: 200px;
 }
 
 .quill-editor .ql-toolbar {
-    border-top-left-radius: 12px; /* Rounded corners for the toolbar */
-    border-top-right-radius: 12px; /* Rounded corners for the toolbar */
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 }
 
 .post-card {
@@ -56,4 +55,9 @@
 
 .custom-dialog {
     filter: blur(2px);
+}
+
+.loginContainer {
+    max-width: 600px;
+    margin: 100px auto;
 }

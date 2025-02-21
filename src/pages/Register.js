@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
-import "../styles/Login.css";
 import { registerUser } from "../services/userService";
+import "../styles/styles.css";
 
 const Register = () => {
   const [name, setName] = useState("");

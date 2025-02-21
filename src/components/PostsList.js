@@ -4,9 +4,9 @@ import { FaStar, FaEye, FaEyeSlash } from "react-icons/fa";
 import PostModal from "./PostModal";
 import DOMPurify from "dompurify";
 import { useAuth } from "../services/authService";
-import "../styles/Modal.css";
+import "../styles/styles.css";
 
-const PostsList = ({ posts, handleSubmit, handleCloseModal, setSelectedPost, selectedPost, handleDeletePost }) => {
+const PostsList = ({ posts, handleCloseModal, setSelectedPost, selectedPost, handleDeletePost, modalMode, setModalMode }) => {
 
   const { user } = useAuth();
 
@@ -24,7 +24,7 @@ const PostsList = ({ posts, handleSubmit, handleCloseModal, setSelectedPost, sel
         {posts?.length > 0 ? (
           posts?.map((post, index) => (
             <Col md={4} key={index} className="mb-4">
-              <Card className="shadow post-card position-relative" onClick={() => setSelectedPost(post)}>
+              <Card className="shadow post-card position-relative" onClick={() => {setSelectedPost(post); setModalMode("view")}}>
                 {post.user_id === user?.id && (
                   <div className="position-absolute top-0 end-0 p-2">
                     {post.is_public ? <FaEye size={20} /> : <FaEyeSlash size={20} />}
@@ -39,7 +39,7 @@ const PostsList = ({ posts, handleSubmit, handleCloseModal, setSelectedPost, sel
                       <FaStar key={i} color={i < post.rating ? "#ffc107" : "#e4e5e9"} />
                     ))}
                   </div>
-                  <div className="ql-editor px-0 my-4 post-content-preview">
+                  <div className="px-0 my-4 post-content-preview">
                     <div dangerouslySetInnerHTML={{ __html: sanitizeContent(post.content) }} />
                   </div>
                   <div className="mt-2">
@@ -60,9 +60,9 @@ const PostsList = ({ posts, handleSubmit, handleCloseModal, setSelectedPost, sel
         show={selectedPost !== null}
         handleClose={handleCloseModal}
         post={selectedPost}
-        handleSubmit={handleSubmit}
         handleDelete={handleDeletePost}
-        initMode={"view"}
+        mode={modalMode}
+        setMode={setModalMode}
       />
     </Container>
   );
