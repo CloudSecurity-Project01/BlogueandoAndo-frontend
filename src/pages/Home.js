@@ -27,11 +27,12 @@ const Home = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [tagsFilterMode, setTagsFilterMode] = useState("AND");
   const [tagInput, setTagInput] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
-    getPosts(showMyPostsOnly, currentPage, pageSize)
+    getPosts(showMyPostsOnly, currentPage, pageSize, selectedTags, tagsFilterMode)
       .then((data) => {
         console.log("DATA: ", data)
         setPosts(data.posts)
@@ -40,21 +41,28 @@ const Home = () => {
         setTotalItems(data.total_items)
       })
       .catch((error) => console.error("Error getting posts:", error));
-  }, [showMyPostsOnly, currentPage, pageSize]);
+  }, [showMyPostsOnly, currentPage, pageSize, selectedTags, tagsFilterMode]);
 
   useEffect(() => {
-    getTags()
-      .then(setAllTags)
-      .catch((error) => {
-        console.error("Error getting tags list", error)
-      });
-  }, []);
+    if (showFilter) {
+      getTags(1, -1)
+        .then((data) => {
+          setAllTags(data.tags)
+        })
+        .catch((error) => {
+          console.error("Error getting tags list", error)
+        });
+    }
+  }, [showFilter]);
 
   const handleSavePost = () => {
 
   };
 
-  //const allTags = [...new Set(posts?.flatMap(post => post.tags))];
+  const clearFilters = () => {
+    setSelectedTags([])
+  }
+
   const filteredSuggestions = tagInput ? allTags.filter(tag => tag.toLowerCase().includes(tagInput.toLowerCase())) : allTags;
 
   const handleTagSelect = (tag) => {
@@ -66,14 +74,6 @@ const Home = () => {
   const removeTag = (tag) => {
     setSelectedTags(selectedTags.filter((t) => t !== tag));
   };
-
-  let filteredPosts = posts;
-
-  if (selectedTags.length > 0) {
-    filteredPosts = filteredPosts.filter(post => selectedTags.every(tag => post.tags.includes(tag)));
-  }
-
-
 
   const handleClose = (postData) => {
     if (postData && postData.title) {
@@ -96,10 +96,6 @@ const Home = () => {
   const handleShowAllTags = () => {
 
   };
-
-
-
-
 
   return (
     <Container>
@@ -127,39 +123,88 @@ const Home = () => {
 
 
       {showFilter && (
-        <Form.Group className="my-3 position-relative d-flex align-items-center">
-          <Form.Label className="me-2 mb-0">Etiquetas:</Form.Label>
-          <InputGroup>
-            <Form.Control
-              type="text"
-              placeholder="Escribe para buscar etiquetas"
-              value={tagInput}
-              onChange={(e) => {
-                setTagInput(e.target.value);
-                setShowDropdown(true);
-              }}
-              onFocus={() => setShowDropdown(true)}
-              onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-            />
-            <Button variant="secondary" onClick={handleShowAllTags}>Ver todas</Button>
-          </InputGroup>
-          {showDropdown && (
-            <div className="position-absolute w-100 bg-white border rounded shadow mt-1" style={{ top: "100%", left: 0, zIndex: 1000 }}>
-              {filteredSuggestions.map((tag, index) => (
-                <div key={index} className="p-2" style={{ cursor: "pointer" }} onMouseDown={() => handleTagSelect(tag)}>
-                  {tag}
-                </div>
-              ))}
+        <div className="m-3 p-3 border rounded bg-light position-relative">
+          <Button
+            variant="outline-warning"
+            className="position-absolute top-0 end-0 mt-2 me-2"
+            onClick={clearFilters}
+          >
+            Limpiar filtros
+          </Button>
+
+          <Form.Group className="position-relative">
+            <Form.Label className="d-block mb-1">Etiquetas:</Form.Label>
+
+            <div className="d-flex align-items-center">
+              <div className="position-relative ms-3" style={{ maxWidth: "350px" }}>
+                <InputGroup>
+                  <Form.Control
+                    type="text"
+                    placeholder="Escribe para buscar etiquetas"
+                    value={tagInput}
+                    onChange={(e) => {
+                      setTagInput(e.target.value);
+                      setShowDropdown(true);
+                    }}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                    style={{ width: "350px" }}
+                  />
+                </InputGroup>
+
+                {showDropdown && (
+                  <div
+                    className="position-absolute bg-white border rounded shadow mt-1"
+                    style={{
+                      top: "100%",
+                      left: 0,
+                      zIndex: 1000,
+                      maxHeight: "200px",
+                      overflowY: "scroll",
+                      width: "350px"
+                    }}
+                  >
+                    {filteredSuggestions?.map((tag, index) => (
+                      <div
+                        key={index}
+                        className="p-2"
+                        style={{ cursor: "pointer" }}
+                        onMouseDown={() => handleTagSelect(tag)}
+                      >
+                        {tag}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Button
+                variant="light"
+                className="ms-2"
+                onClick={() => setTagsFilterMode(tagsFilterMode === "AND" ? "OR" : "AND")}
+              >
+                {tagsFilterMode}
+              </Button>
+
+              <Button variant="secondary" className="ms-5" onClick={handleShowAllTags}>
+                Ver todas
+              </Button>
             </div>
-          )}
-          <div className="mt-2">
-            {selectedTags.map((tag, index) => (
-              <Badge key={index} bg="primary" className="me-1" onClick={() => removeTag(tag)} style={{ cursor: "pointer" }}>
+          </Form.Group>
+
+          <div className="mt-2 d-flex flex-wrap align-items-center">
+            {selectedTags?.map((tag, index) => (
+              <Badge
+                key={index}
+                bg="primary"
+                className={index === 0 ? "ms-3 me-1" : "me-1"}
+                onClick={() => removeTag(tag)}
+                style={{ cursor: "pointer" }}
+              >
                 {tag} ✕
               </Badge>
             ))}
           </div>
-        </Form.Group>
+        </div>
       )}
 
       {user && (
@@ -180,7 +225,7 @@ const Home = () => {
         handleDeletePost={handleDeletePost}
       />
 
-      <PaginationComponent currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} totalItems={totalItems} pageSize={pageSize} setPageSize={setPageSize}/>
+      <PaginationComponent currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} totalItems={totalItems} pageSize={pageSize} setPageSize={setPageSize} />
 
 
     </Container>

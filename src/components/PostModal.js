@@ -7,12 +7,14 @@ import { useAuth } from "../services/authService";
 import DOMPurify from "dompurify";
 import { createPost } from "../services/postService";
 import { updatePost } from "../services/postService";
+import { getTags } from "../services/tagService";
 
 const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [mode, setMode] = useState(initMode);
     const [tagInput, setTagInput] = useState('');
+    const [allTags, setAllTags] = useState([]);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [is_public, setIsPublic] = useState(post ? post.is_public : true);
@@ -20,8 +22,6 @@ const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const inputRef = useRef(null);
-
-    const allTags = ["JavaScript", "React", "Frontend", "CSS", "Flexbox", "Node.js", "Backend"];
 
     useEffect(() => {
         if (show) {
@@ -38,7 +38,15 @@ const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
     }, [show, mode, post]);
 
     useEffect(() => {
-        console.log("Mode has changed to: ", mode);
+    if (mode === "edit" || mode === "create") {
+        getTags(1, -1)
+        .then((data) => {
+            setAllTags(data.tags)
+        })
+        .catch((error) => {
+            console.error("Error getting tags list", error)
+        });
+    }
     }, [mode]);
 
     const handleFullScreenCreate = () => {
@@ -192,13 +200,14 @@ const PostModal = ({ show, handleClose, post, handleDelete, initMode }) => {
                                         onChange={(e) => {
                                             setTagInput(e.target.value);
                                             setShowSuggestions(true);
-                                        }}
+                                        }}  
+                                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                         onKeyDown={handleKeyDown}
                                         placeholder="Escribe para añadir etiquetas"
                                     />
                                 </InputGroup>
                                 {showSuggestions && filteredSuggestions.length > 0 && (
-                                    <ListGroup className="mt-1 position-absolute w-100 shadow-lg" style={{ zIndex: 10, backgroundColor: "white" }}>
+                                    <ListGroup className="mt-1 position-absolute w-100 shadow-lg" style={{ zIndex: 10, backgroundColor: "white", maxHeight: "200px", overflowY: "scroll" }}>
                                         {filteredSuggestions.map((tag, index) => (
                                             <ListGroup.Item key={index} action onClick={() => handleTagSelect(tag)}>
                                                 {tag}

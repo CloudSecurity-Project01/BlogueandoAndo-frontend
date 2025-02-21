@@ -6,7 +6,7 @@ import { useAuth } from "../services/authService";
 import DOMPurify from "dompurify";
 import QuillEditor from "../components/QuillEditor";
 import Error from "../components/Error";
-import { createPost, deletePost, getPostById, updatePost } from "../services/postService";
+import { createPost, deletePost, getPostById, getPostsIds, updatePost } from "../services/postService";
 import { getTags } from "../services/tagService";
 
 const Post = () => {
@@ -20,7 +20,7 @@ const Post = () => {
         tags: [],
         is_public: true,
     });
-    const [posts, setPosts] = useState([]);
+    const [postsIds, setPostsIds] = useState([]);
     const [currentPostIndex, setCurrentPostIndex] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedPost, setEditedPost] = useState(post);
@@ -35,11 +35,18 @@ const Post = () => {
     const inputRef = useRef(null);
 
     useEffect(() => {
-        getTags()
-            .then(setAllTags)
+        getTags(1, -1)
+            .then((data) => {
+                setAllTags(data.tags)
+            })
             .catch((error) => {
-                console.error("Error getting tags list", error)    
+                console.error("Error getting tags list", error)
             });
+        getPostsIds()
+            .then(setPostsIds)
+            .catch((error) => {
+                console.error("Error getting posts IDs", error)
+            })
     }, []);
 
     useEffect(() => {
@@ -59,19 +66,24 @@ const Post = () => {
                         is_public: true
                     });
                 }
+                setError(null);
             }
-            setError(null);
             return;
         }
+
         setError(null);
         getPostById(id)
-            .then(setPost)
+            .then((postData) => {
+                setPost(postData);
+                const postIndex = postsIds.indexOf(Number(id));
+                setCurrentPostIndex(postIndex);
+            })
             .catch((error) => {
                 setError("NotFound");
                 console.error("Error getting post by ID", error);
             });
 
-    }, [id, user, location.state]);
+    }, [id, user, location.state, postsIds]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -91,13 +103,17 @@ const Post = () => {
     }, [location.search, user, location.state, post]);
 
     const handleBack = () => {
-        const prevPostIndex = (currentPostIndex - 1 + posts.length) % posts.length;
-        navigate(`/post/${posts[prevPostIndex].id}`);
+        console.log("IDs: ", postsIds)
+        console.log("current: ", currentPostIndex)
+        const prevPostIndex = (currentPostIndex - 1 + postsIds.length) % postsIds.length;
+        navigate(`/post/${postsIds[prevPostIndex]}`);
     };
 
     const handleForward = () => {
-        const nextPostIndex = (currentPostIndex + 1) % posts.length;
-        navigate(`/post/${posts[nextPostIndex].id}`);
+        console.log("IDs: ", postsIds)
+        console.log("current: ", currentPostIndex)
+        const nextPostIndex = (currentPostIndex + 1) % postsIds.length;
+        navigate(`/post/${postsIds[nextPostIndex]}`);
     };
 
     const handleEdit = () => {
@@ -140,7 +156,6 @@ const Post = () => {
 
     const confirmDelete = (postId) => {
         deletePost(postId);
-        setPosts(posts.filter((post) => post.id !== postId));
         navigate("/home");
     };
 

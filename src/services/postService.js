@@ -34,13 +34,38 @@ export const deletePost = async (postId) => {
     });
 };
 
-export const getPosts = async ( showMyPostsOnly, currentPage, pageSize ) => {
+export const getPosts = async (showMyPostsOnly, currentPage, pageSize, tags, tagFilterMode) => {
     const skip = (currentPage - 1) * pageSize;
-    let url = config.API_BASE_URL + (showMyPostsOnly ? "/my_posts" : "/posts");
+    let url = config.API_BASE_URL + "/posts";
 
     const queryParams = new URLSearchParams({
-      size: pageSize,
-      skip: skip,
+        size: pageSize,
+        skip: skip,
+        filter: showMyPostsOnly ? "mine" : "all",
+    });
+
+    if (tags.length > 0) {
+        queryParams.append("tag_filter_mode", tagFilterMode.toLowerCase())
+        tags.forEach(tag => queryParams.append("tags", tag));
+    }
+
+    url += "?" + queryParams.toString();
+
+    const requestOptions = {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    };
+
+    return await fetchWithAuth(url, requestOptions);
+}
+
+export const getPostsIds = async (showMyPostsOnly) => {
+    let url = config.API_BASE_URL + "/posts_ids";
+
+    const queryParams = new URLSearchParams({
+        filter: showMyPostsOnly ? "mine" : "all"
     });
 
     url += "?" + queryParams.toString();
@@ -51,6 +76,6 @@ export const getPosts = async ( showMyPostsOnly, currentPage, pageSize ) => {
             "Content-Type": "application/json",
         }
     };
-    
+
     return await fetchWithAuth(url, requestOptions);
 }
