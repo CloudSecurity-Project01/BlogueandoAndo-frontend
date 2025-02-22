@@ -92,7 +92,6 @@ const PaginationComponent = ({ currentPage, setCurrentPage, totalPages, totalIte
                     type="number"
                     className="form-control mx-2"
                     style={{ width: "80px" }}
-                    defaultValue={pageSize}
                     min="1"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}

@@ -8,14 +8,17 @@ import DOMPurify from "dompurify";
 import { createPost } from "../services/postService";
 import { updatePost } from "../services/postService";
 import { getTags } from "../services/tagService";
+import RatingModal from "./RatingModal";
 
-const PostModal = ({ show, handleClose, post, handleDelete, mode, setMode }) => {
+const PostModal = ({ show, handleClose, post, setPost, handleDelete, mode, setMode }) => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [tagInput, setTagInput] = useState('');
     const [allTags, setAllTags] = useState([]);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [userRating, setUserRating] = useState(null);
     const [is_public, setIsPublic] = useState(post ? post.is_public : true);
     const [selectedTags, setSelectedTags] = useState([]);
     const navigate = useNavigate();
@@ -24,7 +27,6 @@ const PostModal = ({ show, handleClose, post, handleDelete, mode, setMode }) => 
 
     useEffect(() => {
         if (show) {
-            console.log("MODE: ", mode)
             if (mode === "edit" && post) {
                 setTitle(post.title);
                 setContent(post.content);
@@ -38,7 +40,6 @@ const PostModal = ({ show, handleClose, post, handleDelete, mode, setMode }) => 
     }, [show, mode, post]);
 
     useEffect(() => {
-        console.log("POST MODAL MODE:", mode)
         if (mode === "edit" || mode === "create") {
             getTags(1, -1)
                 .then((data) => {
@@ -71,6 +72,11 @@ const PostModal = ({ show, handleClose, post, handleDelete, mode, setMode }) => 
             }
         });
         handleClose();
+    };
+
+    const openRatingModal = (rating) => {
+        setShowRatingModal(true);
+        setUserRating(rating ? rating : null);
     };
 
     const removeTag = (tag) => {
@@ -150,7 +156,7 @@ const PostModal = ({ show, handleClose, post, handleDelete, mode, setMode }) => 
 
     return (
         <>
-            <Modal show={show} onHide={handleClose} size="lg" className={`custom-modal ${showDeleteConfirm ? 'custom-dialog' : ''}`} centered>
+            <Modal show={show} onHide={handleClose} size="lg" className={`custom-modal ${showDeleteConfirm || showRatingModal ? 'custom-dialog' : ''}`} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>{mode === "edit" ? "Editar Post" : mode === "create" ? "Crear Nuevo Post" : post.title}</Modal.Title>
                 </Modal.Header>
@@ -162,7 +168,10 @@ const PostModal = ({ show, handleClose, post, handleDelete, mode, setMode }) => 
                         <div className="mb-3">
                             <strong>Calificación: </strong>
                             {[...Array(5)].map((_, i) => (
-                                <FaStar key={i} color={i < post.rating ? "#ffc107" : "#e4e5e9"} />
+                                <FaStar key={i} color={i < post.rating ? "#ffc107" : "#e4e5e9"}
+                                    style={{ cursor: user ? "pointer" : "default" }}
+                                    onClick={user ? () => openRatingModal(i + 1) : null}
+                                />
                             ))}
                         </div>
                         <div className="ql-editor my-4">
@@ -292,6 +301,15 @@ const PostModal = ({ show, handleClose, post, handleDelete, mode, setMode }) => 
                     <Button variant="danger" onClick={confirmDelete}>Eliminar</Button>
                 </Modal.Footer>
             </Modal>
+
+            <RatingModal
+                show={showRatingModal}
+                setShow={setShowRatingModal}
+                post={post}
+                setPost={setPost}
+                userRating={userRating}
+                setUserRating={setUserRating}
+            />
         </>
     );
 };

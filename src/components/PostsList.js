@@ -60,6 +60,7 @@ const PostsList = ({ posts, handleCloseModal, setSelectedPost, selectedPost, han
         show={selectedPost !== null}
         handleClose={handleCloseModal}
         post={selectedPost}
+        setPost={setSelectedPost}
         handleDelete={handleDeletePost}
         mode={modalMode}
         setMode={setModalMode}

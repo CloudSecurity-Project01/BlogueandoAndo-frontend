@@ -79,3 +79,13 @@ export const getPostsIds = async (showMyPostsOnly) => {
 
     return await fetchWithAuth(url, requestOptions);
 }
+
+export const ratePost = async (post, rating, user) => {
+    return await fetchWithAuth(`${config.API_BASE_URL}/set_rating`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ "post_id": post.id, "user_id": user.id, "rating": rating }),
+    });
+};

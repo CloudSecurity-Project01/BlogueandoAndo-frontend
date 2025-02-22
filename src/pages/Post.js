@@ -8,6 +8,7 @@ import QuillEditor from "../components/QuillEditor";
 import Error from "../components/Error";
 import { createPost, deletePost, getPostById, getPostsIds, updatePost } from "../services/postService";
 import { getTags } from "../services/tagService";
+import RatingModal from "../components/RatingModal";
 
 const Post = () => {
     const { user } = useAuth();
@@ -188,36 +189,9 @@ const Post = () => {
         }
     };
 
-    const openRatingModal = () => {
+    const openRatingModal = (rating) => {
         setShowRatingModal(true);
-        setUserRating(null);
-    };
-
-    const closeRatingModal = () => {
-        setShowRatingModal(false);
-    };
-
-    const submitRating = async () => {
-        if (userRating === null) return;
-
-        const newAverageRating = (post.rating * post.votes + userRating) / (post.votes + 1);
-
-        // Simulated backend request
-        console.log("Sending new rating to backend:", {
-            postId: post.id,
-            newRating: newAverageRating.toFixed(1),
-            totalVotes: post.votes + 1,
-        });
-
-        // Update post rating
-        setPost((prevPost) => ({
-            ...prevPost,
-            rating: newAverageRating,
-            votes: prevPost.votes + 1,
-        }));
-
-        // Close modal after submission
-        closeRatingModal();
+        setUserRating(rating ? rating : null);
     };
 
     const filteredSuggestions = tagInput
@@ -242,7 +216,7 @@ const Post = () => {
                     <Button variant="light" onClick={() => navigate("/home")}>
                         <FaHome size={24} />
                     </Button>
-                    {user && (post.user_name === user.user_name) && (
+                    {user && (post.user_id === user.id) && (
                         isEditing ? (
                             <>
                                 <Button className="mx-2" variant="success" onClick={handleSave}>
@@ -291,7 +265,8 @@ const Post = () => {
                                 <FaStar
                                     key={i}
                                     color={i < Math.round(post.rating) ? "#ffc107" : "#e4e5e9"}
-                                    style={{ fontSize: "20px" }}
+                                    style={{ fontSize: "20px", cursor: user ? "pointer" : "default" }}
+                                    onClick={user ? () => openRatingModal(i + 1) : null}
                                 />
                             ))}
                             <span className="ms-2 text-muted">{post.rating?.toFixed(1)}</span>
@@ -375,9 +350,9 @@ const Post = () => {
                 </div>
             )}
 
-            {user?.id !== post.user_id && !isEditing && (
+            {user && user.id !== post.user_id && !isEditing && (
                 <div className="text-center my-5">
-                    <Button variant="primary" onClick={openRatingModal}>
+                    <Button variant="primary" onClick={() => openRatingModal(null)}>
                         Calificar este post
                     </Button>
                 </div>
@@ -396,32 +371,15 @@ const Post = () => {
                 </Modal.Footer>
             </Modal>
 
-            {/* Rating Modal */}
-            <Modal show={showRatingModal} onHide={closeRatingModal} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Calificar Publicación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="text-center">
-                    <p>Selecciona una calificación:</p>
-                    {[...Array(5)].map((_, i) => (
-                        <FaStar
-                            key={i}
-                            color={i < (userRating ?? 0) ? "#ffc107" : "#e4e5e9"}
-                            style={{ cursor: "pointer", fontSize: "24px" }}
-                            onClick={() => setUserRating(i + 1)}
-                        />
-                    ))}
-                    <p className="mt-2">Tu calificación: {userRating ?? "N/A"}</p>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={closeRatingModal}>
-                        Cancelar
-                    </Button>
-                    <Button variant="success" onClick={submitRating} disabled={userRating === null}>
-                        Enviar Calificación
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            <RatingModal
+                show={showRatingModal}
+                setShow={setShowRatingModal}
+                post={post}
+                setPost={setPost}
+                userRating={userRating}
+                setUserRating={setUserRating}
+            />
+
         </Container>
     );
 };
