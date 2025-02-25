@@ -3,24 +3,27 @@ import { Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../services/authService";
 import "../styles/styles.css";
+import { sendResetPasswordRequest } from "../services/userService";
 
 const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [email, setEmail] = useState("");  
+  const [success, setSuccess] = useState("");
+  const [email, setEmail] = useState("");
   const [isRecoveringPassword, setIsRecoveringPassword] = useState(false);
+
 
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!email || !password) {
       setError("Ingresa todos los campos");
       return;
     }
-  
+
     try {
       await login(email, password);
       navigate("/home");
@@ -37,23 +40,28 @@ const Login = () => {
     }
 
     try {
-      // Send password recovery request to backend
-      const response = await fetch("/api/recover-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      setError("");
+      setSuccess("");
+      const response = await sendResetPasswordRequest(email);
+      const data = await response.json();
 
-      if (response.ok) {
-        alert("Te hemos enviado un enlace para recuperar tu contraseña.");
-        setEmail("");
-        setIsRecoveringPassword(false);
-      } else {
-        setError("Hubo un problema al enviar el enlace. Inténtalo de nuevo.");
+      if (!response.ok) {
+        setError(data.detail || "Hubo un problema. Intenta nuevamente.");
+        return;
       }
+
+      setSuccess(data.message || "BIEN!");
+
+      setTimeout(() => {
+        setIsRecoveringPassword(false);
+        setError("");
+        setSuccess("");
+      }, 5000);
+
     } catch (err) {
-      setError("Hubo un error. Intenta nuevamente.");
+      setError("Hubo un problema al enviar el enlace. Inténtalo de nuevo.");
     }
+
   };
 
   const togglePasswordRecovery = () => {
@@ -66,9 +74,10 @@ const Login = () => {
       <Card className="p-4 shadow loginContainer">
         <Card.Title className="text-center m-5">
           <h1>BlogueandoAndo</h1>
-          <p className="text-secondary">{isRecoveringPassword ? "Recuperar contraseña" : "Iniciar sesión" }</p>
+          <p className="text-secondary">{isRecoveringPassword ? "Recuperar contraseña" : "Iniciar sesión"}</p>
         </Card.Title>
         {error && <Alert variant="danger">{error}</Alert>}
+        {success && <Alert variant="success">{success}</Alert>}
         {!isRecoveringPassword ? (
           <>
             <Form onSubmit={handleSubmit}>
@@ -105,7 +114,7 @@ const Login = () => {
               <Button variant="link" onClick={togglePasswordRecovery}>Recuperar contraseña</Button>
             </div>
 
-            <Button className="mx-auto mt-5 w-50"  variant="light" onClick={() => navigate("/home")}>Continuar sin iniciar sesión</Button>
+            <Button className="mx-auto mt-5 w-50" variant="light" onClick={() => navigate("/home")}>Continuar sin iniciar sesión</Button>
           </>
         ) : (
           <>

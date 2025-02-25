@@ -24,3 +24,20 @@ export const getUser = async () => {
         method: "GET",
     });
 }
+
+export const sendResetPasswordRequest = async (email) => {
+  return await fetch(`${config.API_BASE_URL}/password-reset-request`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+}
+
+export const resetPassword = async (token, newPassword) => {
+  return await fetch(`${config.API_BASE_URL}/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ "token": token, "new_password": newPassword }),
+  });
+}
+

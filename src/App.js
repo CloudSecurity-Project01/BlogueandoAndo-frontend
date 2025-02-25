@@ -8,6 +8,7 @@ import Post from "./pages/Post";
 import Layout from "./components/Layout";
 import Error from "./components/Error";
 import "./App.css";
+import ResetPasswordForm from "./pages/ResetPasswordForm";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPasswordForm />} />
           <Route path="/" element={<Navigate to="/home" />} />
 
           <Route element={<Layout />}>
