@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, ListGroup, Row, Col } from 'react-bootstrap';
-import PaginationComponent from './PaginationComponent';
-import { useAuth } from "../services/authService";
-import { getTags } from '../services/tagService';
+
+import PaginationComponent from '../PaginationComponent';
+import { getTags } from '../../services/tagService';
+import { useAuth } from '../../services/authService';
 
 const TagsModal = ({ show, handleClose, selectedTags, setSelectedTags }) => {
     const { user } = useAuth();

@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Container, Row, Col, Badge } from "react-bootstrap";
 import { FaStar, FaEye, FaEyeSlash } from "react-icons/fa";
-import PostModal from "./PostModal";
+import PostModal from "./Modals/PostModal";
 import DOMPurify from "dompurify";
 import { useAuth } from "../services/authService";
 import "../styles/styles.css";

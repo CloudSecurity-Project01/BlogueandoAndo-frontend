@@ -1,8 +1,8 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { FaStar } from "react-icons/fa";
-import { ratePost } from '../services/postService';
-import { useAuth } from '../services/authService';
+import { ratePost } from '../../services/postService';
+import { useAuth } from '../../services/authService';
 
 
 const RatingModal = ({ show, setShow, post, setPost, userRating, setUserRating }) => {

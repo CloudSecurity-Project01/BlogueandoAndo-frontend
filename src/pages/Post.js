@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Container, Modal, Button, Badge, Form, InputGroup, ListGroup } from "react-bootstrap";
+import { Spinner, Container, Modal, Button, Badge, Form, InputGroup, ListGroup } from "react-bootstrap";
 import { FaArrowLeft, FaArrowRight, FaStar, FaHome, FaEdit, FaSave, FaTimes, FaTrash } from "react-icons/fa";
 import { useAuth } from "../services/authService";
 import DOMPurify from "dompurify";
@@ -8,7 +8,8 @@ import QuillEditor from "../components/QuillEditor";
 import Error from "../components/Error";
 import { createPost, deletePost, getPostById, getPostsIds, updatePost } from "../services/postService";
 import { getTags } from "../services/tagService";
-import RatingModal from "../components/RatingModal";
+import RatingModal from "../components/Modals/RatingModal";
+import ConfirmDeleteModal from "../components/Modals/ConfirmDeleteModal";
 
 const Post = () => {
     const { user } = useAuth();
@@ -32,6 +33,8 @@ const Post = () => {
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [userRating, setUserRating] = useState(null);
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [loadingButton, setLoadingButton] = useState(false);
 
     const inputRef = useRef(null);
 
@@ -73,6 +76,7 @@ const Post = () => {
         }
 
         setError(null);
+        setLoading(true)
         getPostById(id)
             .then((postData) => {
                 setPost(postData);
@@ -82,7 +86,8 @@ const Post = () => {
             .catch((error) => {
                 setError("NotFound");
                 console.error("Error getting post by ID", error);
-            });
+            })
+            .finally(() => { setLoading(false) });
 
     }, [id, user, location.state, postsIds]);
 
@@ -135,6 +140,7 @@ const Post = () => {
             ? createPost(editedPost.title, editedPost.content, editedPost.tags, user.id)
             : updatePost({ ...editedPost, id: post.id }, user);
 
+        setLoadingButton(true)
         postAction
             .then((data) => {
                 setIsEditing(false);
@@ -143,7 +149,8 @@ const Post = () => {
             .catch((error) => {
                 console.error(`Error ${id === "new" ? "creating" : "updating"} post`, error);
                 alert(`Hubo un error al ${id === "new" ? "crear" : "actualizar"} la publicación. Intenta de nuevo.`);
-            });
+            })
+            .finally(() => { setLoadingButton(false) });
     };
 
     const handleCancel = () => {
@@ -155,9 +162,18 @@ const Post = () => {
         setShowDeleteConfirm(false);
     };
 
-    const confirmDelete = (postId) => {
-        deletePost(postId);
-        navigate("/home");
+    const confirmDelete = async () => {
+        setLoadingButton(true);
+        try {
+            await deletePost(post.id);
+            alert("Publicación eliminada correctamente.");
+            navigate("/home");
+        } catch (error) {
+            console.error("Error deleting post:", error);
+            alert("Hubo un problema al eliminar la publicación.");
+        } finally {
+            setLoadingButton(false);
+        }
     };
 
     const handleDeletePost = () => {
@@ -219,8 +235,9 @@ const Post = () => {
                     {user && (post.user_id === user.id) && (
                         isEditing ? (
                             <>
-                                <Button className="mx-2" variant="success" onClick={handleSave}>
-                                    <FaSave /> Guardar
+                                <Button className="mx-2" variant="success" onClick={handleSave} disabled={loading}>
+                                    {loadingButton ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"/> : <FaSave />}
+                                    Guardar
                                 </Button>
                                 <Button className="mx-2" variant="danger" onClick={handleCancel}>
                                     <FaTimes /> Cancelar
@@ -243,133 +260,134 @@ const Post = () => {
                 </Button>
             </div>
 
-            {isEditing ? (
-                <Form.Control
-                    type="text"
-                    value={editedPost.title}
-                    onChange={(e) => setEditedPost({ ...editedPost, title: e.target.value })}
-                    className="mt-4 text-center fs-3"
-                />
-            ) : (
-                <h2 className="text-center mt-4">{post.title}</h2>
-            )}
+            {loading ? (
+                <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "200px" }}>
+                    <Spinner animation="border" />
+                </div>
+            ) : (<>
 
-            {!isEditing && (
-                <>
-                    <p className="text-center text-secondary">{post.user_name} - {post.publication_date}</p>
-
-                    <div className="d-flex align-items-center">
-                        <strong>Calificación:</strong>
-                        <div className="ms-2">
-                            {[...Array(5)].map((_, i) => (
-                                <FaStar
-                                    key={i}
-                                    color={i < Math.round(post.rating) ? "#ffc107" : "#e4e5e9"}
-                                    style={{ fontSize: "20px", cursor: user ? "pointer" : "default" }}
-                                    onClick={user ? () => openRatingModal(i + 1) : null}
-                                />
-                            ))}
-                            <span className="ms-2 text-muted">{post.rating?.toFixed(1)}</span>
-                        </div>
-                    </div>
-                </>
-            )}
-
-
-            <div className="my-3 position-relative">
-                {(isEditing || post.tags?.length > 0) && (<strong>Etiquetas: </strong>)}
                 {isEditing ? (
-                    <>
-                        <InputGroup>
-                            <Form.Control
-                                type="text"
-                                ref={inputRef}
-                                value={tagInput}
-                                onChange={(e) => {
-                                    setTagInput(e.target.value);
-                                    setShowSuggestions(true);
-                                }}
-                                onKeyDown={handleKeyDown}
-                                placeholder="Escribe para añadir etiquetas"
-                            />
-                        </InputGroup>
-
-                        {showSuggestions && filteredSuggestions.length > 0 && (
-                            <ListGroup className="mt-1 position-absolute w-100 shadow-lg" style={{ zIndex: 10, backgroundColor: "white", maxHeight: "200px", overflowY: "scroll" }}>
-                                {filteredSuggestions.map((tag, index) => (
-                                    <ListGroup.Item
-                                        key={index}
-                                        action
-                                        onClick={() => handleTagSelect(tag)}
-                                    >
-                                        {tag}
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        )}
-
-                        <div className="mt-2">
-                            {editedPost.tags.map((tag, index) => (
-                                <Badge
-                                    key={index}
-                                    bg="primary"
-                                    className="me-1"
-                                    onClick={() => removeTag(tag)}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    {tag} ✕
-                                </Badge>
-                            ))}
-                        </div>
-                    </>
-                ) : (
-                    post.tags?.map((tag, i) => (
-                        <Badge key={i} bg="secondary" className="me-1">{tag}</Badge>
-                    ))
-                )}
-            </div>
-
-            {/* Content */}
-            <div className="ql-editor my-5">
-                {isEditing ? (
-                    <QuillEditor
-                        value={editedPost.content}
-                        onChange={(value) => setEditedPost({ ...editedPost, content: value })}
+                    <Form.Control
+                        type="text"
+                        value={editedPost.title}
+                        onChange={(e) => setEditedPost({ ...editedPost, title: e.target.value })}
+                        className="mt-4 text-center fs-3"
                     />
                 ) : (
-                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+                    <h2 className="text-center mt-4">{post.title}</h2>
                 )}
-            </div>
 
-            {id === "new" && (
-                <div className="ms-auto text-center">
-                    <Button variant="secondary" onClick={() => { navigate("/home") }}>Cancelar</Button>
-                    <Button className="mx-2" variant="primary" onClick={handleSave}>
-                        <FaSave /> Guardar
-                    </Button>
+                {!isEditing && (
+                    <>
+                        <p className="text-center text-secondary">{post.user_name} - {post.publication_date}</p>
+
+                        <div className="d-flex align-items-center">
+                            <strong>Calificación:</strong>
+                            <div className="ms-2">
+                                {[...Array(5)].map((_, i) => (
+                                    <FaStar
+                                        key={i}
+                                        color={i < Math.round(post.rating) ? "#ffc107" : "#e4e5e9"}
+                                        style={{ fontSize: "20px", cursor: user ? "pointer" : "default" }}
+                                        onClick={user ? () => openRatingModal(i + 1) : null}
+                                    />
+                                ))}
+                                <span className="ms-2 text-muted">{post.rating?.toFixed(1)}</span>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                <div className="my-3 position-relative">
+                    {(isEditing || post.tags?.length > 0) && (<strong>Etiquetas: </strong>)}
+                    {isEditing ? (
+                        <>
+                            <InputGroup>
+                                <Form.Control
+                                    type="text"
+                                    ref={inputRef}
+                                    value={tagInput}
+                                    onChange={(e) => {
+                                        setTagInput(e.target.value);
+                                        setShowSuggestions(true);
+                                    }}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Escribe para añadir etiquetas"
+                                />
+                            </InputGroup>
+
+                            {showSuggestions && filteredSuggestions.length > 0 && (
+                                <ListGroup className="mt-1 position-absolute w-100 shadow-lg" style={{ zIndex: 10, backgroundColor: "white", maxHeight: "200px", overflowY: "scroll" }}>
+                                    {filteredSuggestions.map((tag, index) => (
+                                        <ListGroup.Item
+                                            key={index}
+                                            action
+                                            onClick={() => handleTagSelect(tag)}
+                                        >
+                                            {tag}
+                                        </ListGroup.Item>
+                                    ))}
+                                </ListGroup>
+                            )}
+
+                            <div className="mt-2">
+                                {editedPost.tags.map((tag, index) => (
+                                    <Badge
+                                        key={index}
+                                        bg="primary"
+                                        className="me-1"
+                                        onClick={() => removeTag(tag)}
+                                        style={{ cursor: "pointer" }}
+                                    >
+                                        {tag} ✕
+                                    </Badge>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        post.tags?.map((tag, i) => (
+                            <Badge key={i} bg="secondary" className="me-1">{tag}</Badge>
+                        ))
+                    )}
                 </div>
-            )}
 
-            {user && user.id !== post.user_id && !isEditing && (
-                <div className="text-center my-5">
-                    <Button variant="primary" onClick={() => openRatingModal(null)}>
-                        Calificar este post
-                    </Button>
+                {/* Content */}
+                <div className="ql-editor my-5">
+                    {isEditing ? (
+                        <QuillEditor
+                            value={editedPost.content}
+                            onChange={(value) => setEditedPost({ ...editedPost, content: value })}
+                        />
+                    ) : (
+                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+                    )}
                 </div>
-            )}
 
-            <Modal show={showDeleteConfirm} onHide={cancelDelete} backdrop="static" keyboard={false} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirmar eliminación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p>¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.</p>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={cancelDelete}>Cancelar</Button>
-                    <Button variant="danger" onClick={confirmDelete}>Eliminar</Button>
-                </Modal.Footer>
-            </Modal>
+                {id === "new" && (
+                    <div className="ms-auto text-center">
+                        <Button variant="secondary" onClick={() => { navigate("/home") }}>Cancelar</Button>
+                        <Button className="mx-2" variant="primary" onClick={handleSave}>
+                            {loadingButton ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"/> : <FaSave />}
+                            <FaSave /> Guardar
+                        </Button>
+                    </div>
+                )}
+
+                {user && user.id !== post.user_id && !isEditing && (
+                    <div className="text-center my-5">
+                        <Button variant="primary" onClick={() => openRatingModal(null)}>
+                            Calificar este post
+                        </Button>
+                    </div>
+                )}
+            </>)}
+
+            <ConfirmDeleteModal 
+                show={showDeleteConfirm}
+                loading={loadingButton}
+                cancelDelete={cancelDelete} 
+                confirmDelete={confirmDelete} 
+            />
 
             <RatingModal
                 show={showRatingModal}
@@ -379,6 +397,7 @@ const Post = () => {
                 userRating={userRating}
                 setUserRating={setUserRating}
             />
+
 
         </Container>
     );

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Container, Button, Form, InputGroup, Badge } from "react-bootstrap";
+import { Spinner, Container, Button, Form, InputGroup, Badge } from "react-bootstrap";
 import { FaPlus, FaFilter } from "react-icons/fa";
 import { useAuth } from "../services/authService";
 import PostsList from "../components/PostsList";
-import PostModal from "../components/PostModal";
+import PostModal from "../components/Modals/PostModal";
 import { useLocation } from "react-router-dom";
 import { deletePost, getPosts } from "../services/postService";
 import "../styles/styles.css";
 import { getTags } from "../services/tagService";
 import PaginationComponent from "../components/PaginationComponent";
-import TagsModal from "../components/TagsModal";
+import TagsModal from "../components/Modals/TagsModal";
 
 
 const Home = () => {
@@ -33,8 +33,10 @@ const Home = () => {
   const [tagsFilterMode, setTagsFilterMode] = useState("AND");
   const [tagInput, setTagInput] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true)
     getPosts(showMyPostsOnly, currentPage, pageSize, selectedTags, tagsFilterMode)
       .then((data) => {
         console.log("DATA: ", data)
@@ -43,7 +45,8 @@ const Home = () => {
         setTotalPages(data.total_pages)
         setTotalItems(data.total_items)
       })
-      .catch((error) => console.error("Error getting posts:", error));
+      .catch((error) => console.error("Error getting posts:", error))
+      .finally(() => { setLoading(false) });
   }, [showMyPostsOnly, currentPage, pageSize, selectedTags, tagsFilterMode]);
 
   useEffect(() => {
@@ -58,7 +61,7 @@ const Home = () => {
     }
   }, [showFilter]);
 
-  useEffect(()=> {
+  useEffect(() => {
     console.log("POSTS: ", posts)
   }, [posts])
 
@@ -124,7 +127,7 @@ const Home = () => {
         <div className="ms-auto">
 
           {user && (
-            <Button variant="primary" onClick={() => { setShowPostModal(true); setModalMode("create")}}>
+            <Button variant="primary" onClick={() => { setShowPostModal(true); setModalMode("create") }}>
               <FaPlus /> Nueva
             </Button>
           )}
@@ -227,15 +230,21 @@ const Home = () => {
         />
       )}
 
-      <PostsList
-        posts={posts}
-        handleCloseModal={handleClosePostModal}
-        setSelectedPost={setSelectedPost}
-        selectedPost={selectedPost}
-        handleDeletePost={handleDeletePost}
-        modalMode={modalMode}
-        setModalMode={setModalMode}
-      />
+      {loading ? (
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "200px" }}>
+          <Spinner animation="border" />
+        </div>
+      ) : (
+        <PostsList
+          posts={posts}
+          handleCloseModal={handleClosePostModal}
+          setSelectedPost={setSelectedPost}
+          selectedPost={selectedPost}
+          handleDeletePost={handleDeletePost}
+          modalMode={modalMode}
+          setModalMode={setModalMode}
+        />
+      )}
 
       <TagsModal
         show={showTagsModal}

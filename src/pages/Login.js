@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Button, Container, Card, Alert } from "react-bootstrap";
+import { Spinner, Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../services/authService";
 import "../styles/styles.css";
@@ -11,7 +11,7 @@ const Login = () => {
   const [success, setSuccess] = useState("");
   const [email, setEmail] = useState("");
   const [isRecoveringPassword, setIsRecoveringPassword] = useState(false);
-
+  const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -24,12 +24,15 @@ const Login = () => {
       return;
     }
 
+    setLoading(true)
     try {
       await login(email, password);
       navigate("/home");
     } catch (err) {
       const errorMessage = err.message || "Credenciales incorrectas";
       setError(errorMessage);
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -39,9 +42,10 @@ const Login = () => {
       return;
     }
 
+    setLoading(true)
+    setError("");
+    setSuccess("");
     try {
-      setError("");
-      setSuccess("");
       const response = await sendResetPasswordRequest(email);
       const data = await response.json();
 
@@ -60,6 +64,8 @@ const Login = () => {
 
     } catch (err) {
       setError("Hubo un problema al enviar el enlace. Inténtalo de nuevo.");
+    } finally {
+      setLoading(false)
     }
 
   };
@@ -103,18 +109,19 @@ const Login = () => {
                 />
               </Form.Group>
 
-              <Button variant="primary" type="submit" className="w-100 mt-5">
+              <Button variant="primary" type="submit" className="w-100 mt-5" disabled={loading}>
+                {loading && <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"/>}
                 Ingresar
               </Button>
             </Form>
 
             {/* Password recovery link */}
             <div className="text-center">
-              <Button variant="link" onClick={() => navigate("/register")}>Registrarse</Button>
-              <Button variant="link" onClick={togglePasswordRecovery}>Recuperar contraseña</Button>
+              <Button variant="link" onClick={() => navigate("/register")} disabled={loading}>Registrarse</Button>
+              <Button variant="link" onClick={togglePasswordRecovery} disabled={loading}>Recuperar contraseña</Button>
             </div>
 
-            <Button className="mx-auto mt-5 w-50" variant="light" onClick={() => navigate("/home")}>Continuar sin iniciar sesión</Button>
+            <Button className="mx-auto mt-5 w-50" variant="light" onClick={() => navigate("/home")} disabled={loading}>Continuar sin iniciar sesión</Button>
           </>
         ) : (
           <>

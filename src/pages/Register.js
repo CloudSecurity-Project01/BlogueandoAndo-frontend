@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Button, Container, Card, Alert } from "react-bootstrap";
+import { Spinner, Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from "../services/userService";
 import "../styles/styles.css";
@@ -11,6 +11,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -27,10 +28,10 @@ const Register = () => {
       return;
     }
 
+    setError("");
+    setSuccess("");
+    setLoading(true)
     try {
-      setError("");
-      setSuccess("");
-
       const response = await registerUser(name, email, password);
       const data = await response.json();
 
@@ -45,6 +46,8 @@ const Register = () => {
 
     } catch (err) {
       setError("Hubo un problema al enviar el enlace. Inténtalo de nuevo.");
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -55,7 +58,7 @@ const Register = () => {
           <h1>BlogueandoAndo</h1>
           <p className="text-secondary">Nueva cuenta</p>
         </Card.Title>
-        
+
         {error && <Alert variant="danger">{error}</Alert>}
         {success && <Alert variant="success">{success}</Alert>}
 
@@ -101,7 +104,7 @@ const Register = () => {
           </Form.Group>
 
           <Button variant="primary" type="submit" className="w-100 mt-4">
-            Crear cuenta
+            {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Crear cuenta"}
           </Button>
         </Form>
 
