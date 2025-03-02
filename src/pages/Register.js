@@ -12,8 +12,31 @@ const Register = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState("");
 
   const navigate = useNavigate();
+
+  const validatePassword = (password) => {
+    const minLength = /.{8,}/;
+    const uppercase = /[A-Z]/;
+    const lowercase = /[a-z]/;
+    const number = /\d/;
+    const specialChar = /[!@#$%^&*(),.?":{}|<>]/;
+
+    if (!minLength.test(password)) return "Debe tener al menos 8 caracteres.";
+    if (!uppercase.test(password)) return "Debe contener una letra mayúscula.";
+    if (!lowercase.test(password)) return "Debe contener una letra minúscula.";
+    if (!number.test(password)) return "Debe contener un número.";
+    if (!specialChar.test(password)) return "Debe contener un carácter especial.";
+
+    return "";
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+    setPasswordStrength(validatePassword(value));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,9 +51,15 @@ const Register = () => {
       return;
     }
 
+    if (passwordStrength) {
+      setError(passwordStrength);
+      return;
+    }
+
     setError("");
     setSuccess("");
-    setLoading(true)
+    setLoading(true);
+
     try {
       const response = await registerUser(name, email, password);
       const data = await response.json();
@@ -41,13 +70,11 @@ const Register = () => {
       }
 
       setSuccess(data.message || "Revisa tu bandeja de entrada para activar tu cuenta.");
-
-      setTimeout(() => { navigate('/login') }, 5000);
-
+      setTimeout(() => navigate('/login'), 5000);
     } catch (err) {
       setError("Hubo un problema al enviar el enlace. Inténtalo de nuevo.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -89,8 +116,11 @@ const Register = () => {
               type="password"
               placeholder="Contraseña"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
             />
+            {passwordStrength && (
+              <Form.Text className="text-danger">{passwordStrength}</Form.Text>
+            )}
           </Form.Group>
 
           <Form.Group controlId="formConfirmPassword" className="mt-3">
