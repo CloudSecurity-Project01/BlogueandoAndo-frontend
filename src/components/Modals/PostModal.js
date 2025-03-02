@@ -3,12 +3,14 @@ import { Spinner, Modal, Button, Form, Badge, InputGroup, ListGroup } from "reac
 import { FaStar, FaExpand, FaExternalLinkAlt, FaEye, FaEyeSlash, FaTrash } from "react-icons/fa";
 import QuillEditor from "../QuillEditor";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../services/authService";
 import DOMPurify from "dompurify";
 import RatingModal from "./RatingModal";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import { getTags } from "../../services/tagService";
 import { createPost, getPostById, updatePost } from "../../services/postService";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import { extractErrorMessage } from "../../services/userService";
 
 const PostModal = ({ show, handleClose, post, setPost, handleDelete, mode, setMode }) => {
     const [title, setTitle] = useState('');
@@ -26,6 +28,7 @@ const PostModal = ({ show, handleClose, post, setPost, handleDelete, mode, setMo
     const navigate = useNavigate();
     const { user } = useAuth();
     const inputRef = useRef(null);
+    const showToast = useToast();
 
     useEffect(() => {
         if (show) {
@@ -50,7 +53,7 @@ const PostModal = ({ show, handleClose, post, setPost, handleDelete, mode, setMo
                         setPost(postData);
                     })
                     .catch((error) => {
-                        alert("Hubo un error cargando la publicación.");
+                        showToast("Hubo un error cargando la publicación.", "error");
                         console.error("Error getting post by ID", error);
                     })
                     .finally(() => { setLoading(false) });
@@ -68,6 +71,7 @@ const PostModal = ({ show, handleClose, post, setPost, handleDelete, mode, setMo
                     setAllTags(data.tags)
                 })
                 .catch((error) => {
+                    showToast(extractErrorMessage(error), "error");
                     console.error("Error getting tags list", error)
                 });
         }
@@ -125,15 +129,15 @@ const PostModal = ({ show, handleClose, post, setPost, handleDelete, mode, setMo
     };
 
     const confirmDelete = async () => {
-        setLoadingButton(true)
+        setLoadingButton(true);
         try {
             await handleDelete(post.id);
             setShowDeleteConfirm(false);
-            alert("Publicación eliminada correctamente.");
-            handleClose();
+            showToast("Publicación eliminada correctamente.", "success");
+            handleClose();            
         } catch (error) {
+            showToast(extractErrorMessage(error), "error");
             console.error("Error deleting post:", error);
-            alert("Hubo un problema al eliminar la publicación.");
         } finally {
             setLoadingButton(false);
         }
@@ -145,11 +149,13 @@ const PostModal = ({ show, handleClose, post, setPost, handleDelete, mode, setMo
 
     const handleSubmit = () => {
         if (!title.trim()) {
-            return alert("Por favor, ingresa un título.");
+            showToast("Por favor, ingresa un título.", "error");
+            return;
         }
 
         if (!content.trim()) {
-            return alert("Por favor, ingresa contenido.");
+            showToast("Por favor, ingresa el contenido de tu publicación.", "error");
+            return;
         }
 
         const postData = {
@@ -172,10 +178,11 @@ const PostModal = ({ show, handleClose, post, setPost, handleDelete, mode, setMo
                 if (mode === "edit") setIsPublic(data.is_public);
                 handleClose(data, mode === "create");
                 setMode("view");
+                showToast(`Publicación ${mode === "create" ? "creada" : "actualizada"} correctamente.`, "success");
             })
             .catch((error) => {
                 console.error(`Error ${mode === "create" ? "creating" : "updating"} post`, error);
-                alert(`Hubo un error al ${mode === "create" ? "crear" : "actualizar"} la publicación. Intenta de nuevo.`);
+                showToast(`Hubo un error al ${mode === "create" ? "crear" : "actualizar"} la publicación. Intenta de nuevo.`, "error");
             })
             .finally(() => { setLoadingButton(false) });
     };

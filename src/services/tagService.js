@@ -1,5 +1,5 @@
 import config from "../config";
-import { fetchWithAuth } from "./authService";
+import { fetchWithAuth } from "../context/AuthContext";
 
 export const getTags = async (currentPage, pageSize, onlyMine) => {
   const skip = (currentPage - 1) * pageSize;

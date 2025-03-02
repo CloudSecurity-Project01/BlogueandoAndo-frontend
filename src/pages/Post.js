@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Spinner, Container, Modal, Button, Badge, Form, InputGroup, ListGroup } from "react-bootstrap";
+import { Spinner, Container, Button, Badge, Form, InputGroup, ListGroup } from "react-bootstrap";
 import { FaArrowLeft, FaArrowRight, FaStar, FaHome, FaEdit, FaSave, FaTimes, FaTrash } from "react-icons/fa";
-import { useAuth } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 import DOMPurify from "dompurify";
 import QuillEditor from "../components/QuillEditor";
 import Error from "../components/Error";
@@ -10,6 +10,9 @@ import { createPost, deletePost, getPostById, getPostsIds, updatePost } from "..
 import { getTags } from "../services/tagService";
 import RatingModal from "../components/Modals/RatingModal";
 import ConfirmDeleteModal from "../components/Modals/ConfirmDeleteModal";
+import { useToast } from "../context/ToastContext"
+import TagsModal from "../components/Modals/TagsModal";
+import { extractErrorMessage } from "../services/userService";
 
 const Post = () => {
     const { user } = useAuth();
@@ -31,12 +34,14 @@ const Post = () => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showRatingModal, setShowRatingModal] = useState(false);
+    const [showTagsModal, setShowTagsModal] = useState(false);
     const [userRating, setUserRating] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [loadingButton, setLoadingButton] = useState(false);
 
     const inputRef = useRef(null);
+    const showToast = useToast();
 
     useEffect(() => {
         getTags(1, -1)
@@ -44,14 +49,16 @@ const Post = () => {
                 setAllTags(data.tags)
             })
             .catch((error) => {
+                showToast(extractErrorMessage(error), "error");
                 console.error("Error getting tags list", error)
             });
         getPostsIds()
             .then(setPostsIds)
             .catch((error) => {
+                showToast(extractErrorMessage(error), "error");
                 console.error("Error getting posts IDs", error)
             })
-    }, []);
+    }, [showToast]);
 
     useEffect(() => {
         if (!id) return;
@@ -85,11 +92,12 @@ const Post = () => {
             })
             .catch((error) => {
                 setError("NotFound");
+                showToast(extractErrorMessage(error), "error");
                 console.error("Error getting post by ID", error);
             })
             .finally(() => { setLoading(false) });
 
-    }, [id, user, location.state, postsIds]);
+    }, [id, user, location.state, postsIds, showToast]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -129,11 +137,13 @@ const Post = () => {
 
     const handleSave = () => {
         if (!editedPost.title.trim()) {
-            return alert("Por favor, ingresa un título.");
+            showToast("Ingresa un título", "danger");
+            return;
         }
 
         if (!editedPost.content.trim()) {
-            return alert("Por favor, ingresa contenido.");
+            showToast("Ingresa el contenido de tu publicación", "danger");
+            return;
         }
 
         const postAction = id === "new"
@@ -145,10 +155,11 @@ const Post = () => {
             .then((data) => {
                 setIsEditing(false);
                 id === "new" ? navigate(`/post/${data.id}`) : setPost(data);
+                showToast(`Publicación ${id === "new" ? "creada" : "actualizada"} correctamente.`, "success");
             })
             .catch((error) => {
                 console.error(`Error ${id === "new" ? "creating" : "updating"} post`, error);
-                alert(`Hubo un error al ${id === "new" ? "crear" : "actualizar"} la publicación. Intenta de nuevo.`);
+                showToast(`Hubo un error al ${id === "new" ? "crear" : "actualizar"} la publicación. Intenta de nuevo.`, "error");
             })
             .finally(() => { setLoadingButton(false) });
     };
@@ -166,11 +177,12 @@ const Post = () => {
         setLoadingButton(true);
         try {
             await deletePost(post.id);
-            alert("Publicación eliminada correctamente.");
+            showToast("Publicación eliminada correctamente.", "success");
             navigate("/home");
         } catch (error) {
             console.error("Error deleting post:", error);
-            alert("Hubo un problema al eliminar la publicación.");
+            showToast(extractErrorMessage(error), "error");
+            showToast("Hubo un problema al eliminar la publicación.", "error");
         } finally {
             setLoadingButton(false);
         }
@@ -180,14 +192,28 @@ const Post = () => {
         setShowDeleteConfirm(true);
     };
 
+    const handleShowAllTags = () => {
+        setShowTagsModal(true)
+    };
+
     const handleTagSelect = (tag) => {
         const normalizedTag = tag.toLowerCase();
-        if (!editedPost.tags.some((t) => t.toLowerCase() === normalizedTag)) {
-            setEditedPost((prevPost) => ({
+    
+        const tagExists = editedPost.tags.some((t) => t.toLowerCase() === normalizedTag);
+    
+        setEditedPost((prevPost) => {
+            const isInputTagSelected = normalizedTag === tagInput.toLowerCase();
+    
+            return {
                 ...prevPost,
-                tags: [...prevPost.tags, tag]
-            }));
-        }
+                tags: tagExists && !isInputTagSelected
+                    ? prevPost.tags.filter((t) => t.toLowerCase() !== normalizedTag)
+                    : tagExists || isInputTagSelected
+                        ? prevPost.tags
+                        : [...prevPost.tags, tag]
+            };
+        });
+    
         setTagInput("");
         setShowSuggestions(false);
     };
@@ -236,7 +262,7 @@ const Post = () => {
                         isEditing ? (
                             <>
                                 <Button className="mx-2" variant="success" onClick={handleSave} disabled={loading}>
-                                    {loadingButton ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"/> : <FaSave />}
+                                    {loadingButton ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : <FaSave />}
                                     Guardar
                                 </Button>
                                 <Button className="mx-2" variant="danger" onClick={handleCancel}>
@@ -272,6 +298,7 @@ const Post = () => {
                         value={editedPost.title}
                         onChange={(e) => setEditedPost({ ...editedPost, title: e.target.value })}
                         className="mt-4 text-center fs-3"
+                        placeholder="Título"
                     />
                 ) : (
                     <h2 className="text-center mt-4">{post.title}</h2>
@@ -302,33 +329,51 @@ const Post = () => {
                     {(isEditing || post.tags?.length > 0) && (<strong>Etiquetas: </strong>)}
                     {isEditing ? (
                         <>
-                            <InputGroup>
-                                <Form.Control
-                                    type="text"
-                                    ref={inputRef}
-                                    value={tagInput}
-                                    onChange={(e) => {
-                                        setTagInput(e.target.value);
-                                        setShowSuggestions(true);
-                                    }}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Escribe para añadir etiquetas"
-                                />
-                            </InputGroup>
+                            <div className="d-flex align-items-center">
+                                <div className="position-relative flex-grow-1">
+                                    <InputGroup>
+                                        <Form.Control
+                                            type="text"
+                                            ref={inputRef}
+                                            value={tagInput}
+                                            onChange={(e) => {
+                                                setTagInput(e.target.value);
+                                                setShowSuggestions(true);
+                                            }}
+                                            onKeyDown={handleKeyDown}
+                                            onBlur={() => { setShowSuggestions(false) }}
+                                            placeholder="Escribe para añadir etiquetas"
+                                        />
+                                    </InputGroup>
 
-                            {showSuggestions && filteredSuggestions.length > 0 && (
-                                <ListGroup className="mt-1 position-absolute w-100 shadow-lg" style={{ zIndex: 10, backgroundColor: "white", maxHeight: "200px", overflowY: "scroll" }}>
-                                    {filteredSuggestions.map((tag, index) => (
-                                        <ListGroup.Item
-                                            key={index}
-                                            action
-                                            onClick={() => handleTagSelect(tag)}
+                                    {showSuggestions && filteredSuggestions.length > 0 && (
+                                        <ListGroup
+                                            className="mt-1 position-absolute w-100 shadow-lg"
+                                            style={{
+                                                zIndex: 10,
+                                                backgroundColor: "white",
+                                                maxHeight: "200px",
+                                                overflowY: "scroll",
+                                            }}
                                         >
-                                            {tag}
-                                        </ListGroup.Item>
-                                    ))}
-                                </ListGroup>
-                            )}
+                                            {filteredSuggestions.map((tag, index) => (
+                                                <ListGroup.Item
+                                                    key={index}
+                                                    action
+                                                    onMouseDown={(e) => e.preventDefault()}
+                                                    onClick={() => handleTagSelect(tag)}
+                                                >
+                                                    {tag}
+                                                </ListGroup.Item>
+                                            ))}
+                                        </ListGroup>
+                                    )}
+                                </div>
+
+                                <Button variant="secondary" className="ms-2 w-auto text-nowrap" onClick={handleShowAllTags}>
+                                    Ver todas
+                                </Button>
+                            </div>
 
                             <div className="mt-2">
                                 {editedPost.tags.map((tag, index) => (
@@ -364,11 +409,11 @@ const Post = () => {
                 </div>
 
                 {id === "new" && (
-                    <div className="ms-auto text-center">
+                    <div className="ms-auto text-center  my-5">
                         <Button variant="secondary" onClick={() => { navigate("/home") }}>Cancelar</Button>
                         <Button className="mx-2" variant="primary" onClick={handleSave}>
-                            {loadingButton ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"/> : <FaSave />}
-                            <FaSave /> Guardar
+                            {loadingButton ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : <FaSave />}
+                            Guardar
                         </Button>
                     </div>
                 )}
@@ -382,11 +427,11 @@ const Post = () => {
                 )}
             </>)}
 
-            <ConfirmDeleteModal 
+            <ConfirmDeleteModal
                 show={showDeleteConfirm}
                 loading={loadingButton}
-                cancelDelete={cancelDelete} 
-                confirmDelete={confirmDelete} 
+                cancelDelete={cancelDelete}
+                confirmDelete={confirmDelete}
             />
 
             <RatingModal
@@ -398,6 +443,14 @@ const Post = () => {
                 setUserRating={setUserRating}
             />
 
+            <TagsModal
+                show={showTagsModal}
+                handleClose={() => {
+                    setShowTagsModal(false)
+                }}
+                selectedTags={editedPost.tags}
+                handleTagSelect={handleTagSelect}
+            />
 
         </Container>
     );

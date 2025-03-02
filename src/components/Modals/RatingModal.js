@@ -2,12 +2,15 @@ import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { FaStar } from "react-icons/fa";
 import { ratePost } from '../../services/postService';
-import { useAuth } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { extractErrorMessage } from '../../services/userService';
 
 
 const RatingModal = ({ show, setShow, post, setPost, userRating, setUserRating }) => {
     
     const { user } = useAuth();
+    const showToast = useToast();
 
     const closeRatingModal = () => {
         setShow(false);
@@ -21,7 +24,8 @@ const RatingModal = ({ show, setShow, post, setPost, userRating, setUserRating }
                 setPost(postData)
             })
             .catch((error) => {
-                console.error("Error rating post: ", error)
+                showToast(extractErrorMessage(error), "error");
+                console.error("NEW ERROR: ", error)
             });
         closeRatingModal();
     };

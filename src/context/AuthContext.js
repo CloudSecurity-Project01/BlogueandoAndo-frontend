@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { getUser, loginUser } from "./userService";
+import { getUser, loginUser } from "../services/userService";
 
 const AuthContext = createContext();
 
@@ -22,8 +22,8 @@ export const fetchWithAuth = async (url, options = {}) => {
     if (response.status === 401) {
       const data = await response.json();
       let errorMessage = data.detail || "No estás autorizado";
-
-      if (data.detail && data.detail.includes('Token has expired')) {
+      
+      if (data.detail && data.detail.includes('expired')) {
         localStorage.removeItem("token");
         setTimeout(() => {
           alert("¡Vaya! Tu sesión ha expirado. Vuelve a iniciar sesión.");

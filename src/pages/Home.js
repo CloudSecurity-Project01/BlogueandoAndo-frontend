@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Spinner, Container, Button, Form, InputGroup, Badge } from "react-bootstrap";
 import { FaPlus, FaFilter } from "react-icons/fa";
-import { useAuth } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 import PostsList from "../components/PostsList";
 import PostModal from "../components/Modals/PostModal";
 import { useLocation } from "react-router-dom";
@@ -61,18 +61,33 @@ const Home = () => {
     }
   }, [showFilter]);
 
-  useEffect(() => {
-    console.log("POSTS: ", posts)
-  }, [posts])
-
   const clearFilters = () => {
     setSelectedTags([])
   }
 
-  const filteredSuggestions = tagInput ? allTags.filter(tag => tag.toLowerCase().includes(tagInput.toLowerCase())) : allTags;
+  const filteredSuggestions = tagInput
+    ? allTags
+      .filter(tag => tag.toLowerCase().includes(tagInput.toLowerCase()))
+      .filter(tag => !selectedTags.some(selectedTag => selectedTag.toLowerCase() === tag.toLowerCase()))
+    : allTags.filter(tag => !selectedTags.some(selectedTag => selectedTag.toLowerCase() === tag.toLowerCase()));
 
   const handleTagSelect = (tag) => {
-    setSelectedTags(prevTags => [...new Set([...prevTags, tag])]);
+    setSelectedTags(prevTags => {
+      const normalizedTag = tag.toLowerCase();
+      const tagExists = prevTags.some(t => t.toLowerCase() === normalizedTag);
+      const isInputTagSelected = normalizedTag === tagInput.toLowerCase();
+
+      if (tagExists && !isInputTagSelected) {
+        return prevTags.filter(t => t.toLowerCase() !== normalizedTag);
+      }
+
+      if (tagExists || isInputTagSelected) {
+        return prevTags;
+      }
+
+      return [...prevTags, tag];
+    });
+
     setTagInput("");
     setShowDropdown(false);
   };
@@ -141,6 +156,7 @@ const Home = () => {
             variant="outline-warning"
             className="position-absolute top-0 end-0 mt-2 me-2"
             onClick={clearFilters}
+            style={{ zIndex: 1000 }}
           >
             Limpiar filtros
           </Button>
@@ -250,7 +266,7 @@ const Home = () => {
         show={showTagsModal}
         handleClose={handleCloseTagsModal}
         selectedTags={selectedTags}
-        setSelectedTags={setSelectedTags}
+        handleTagSelect={handleTagSelect}
       />
 
       <PaginationComponent currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} totalItems={totalItems} pageSize={pageSize} setPageSize={setPageSize} />

@@ -1,5 +1,5 @@
 import config from "../config";
-import { fetchWithAuth } from "./authService";
+import { fetchWithAuth } from "../context/AuthContext";
 
 export const getPostById = async (id) => {
     return await fetchWithAuth(`${config.API_BASE_URL}/post?id=${id}`);

@@ -1,36 +1,36 @@
 import config from "../config";
-import { fetchWithAuth } from "./authService";
+import { fetchWithAuth } from "../context/AuthContext";
 
 export const loginUser = async (email, password) => {
-    return await fetch(`${config.API_BASE_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+  return await fetch(`${config.API_BASE_URL}/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
 }
 
 export const registerUser = async (name, email, password) => {
-    return await fetch(`${config.API_BASE_URL}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+  return await fetch(`${config.API_BASE_URL}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  });
 }
 
 export const getUser = async () => {
-    return await fetchWithAuth(`${config.API_BASE_URL}/user`, {
-        method: "GET",
-    });
+  return await fetchWithAuth(`${config.API_BASE_URL}/user`, {
+    method: "GET",
+  });
 }
 
 export const sendResetPasswordRequest = async (email) => {
   return await fetch(`${config.API_BASE_URL}/password-reset-request`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
 }
 
 export const resetPassword = async (token, newPassword) => {
@@ -40,4 +40,11 @@ export const resetPassword = async (token, newPassword) => {
     body: JSON.stringify({ "token": token, "new_password": newPassword }),
   });
 }
+
+export const extractErrorMessage = (errorResponse) => {
+  const regex = /"detail":\s*"([^"]+)"/;
+  const match = errorResponse.message.match(regex);
+  return match ? match[1] : "Hubo un error al realizar esta acción";
+};
+
 

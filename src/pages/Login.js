@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Spinner, Form, Button, Container, Card, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 import "../styles/styles.css";
 import { sendResetPasswordRequest } from "../services/userService";
 

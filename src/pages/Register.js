@@ -16,6 +16,11 @@ const Register = () => {
 
   const navigate = useNavigate();
 
+  const validateEmail = (email) => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+  };
+
   const validatePassword = (password) => {
     const minLength = /.{8,}/;
     const uppercase = /[A-Z]/;
@@ -23,11 +28,11 @@ const Register = () => {
     const number = /\d/;
     const specialChar = /[!@#$%^&*(),.?":{}|<>]/;
 
-    if (!minLength.test(password)) return "Debe tener al menos 8 caracteres.";
-    if (!uppercase.test(password)) return "Debe contener una letra mayúscula.";
-    if (!lowercase.test(password)) return "Debe contener una letra minúscula.";
-    if (!number.test(password)) return "Debe contener un número.";
-    if (!specialChar.test(password)) return "Debe contener un carácter especial.";
+    if (!minLength.test(password)) return "La contraseña debe tener al menos 8 caracteres.";
+    if (!uppercase.test(password)) return "La contraseña debe contener una letra mayúscula.";
+    if (!lowercase.test(password)) return "La contraseña debe contener una letra minúscula.";
+    if (!number.test(password)) return "La contraseña debe contener un número.";
+    if (!specialChar.test(password)) return "La contraseña debe contener un carácter especial.";
 
     return "";
   };
@@ -43,6 +48,11 @@ const Register = () => {
 
     if (!name || !email || !password || !confirmPassword) {
       setError("Ingresa todos los campos");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Por favor ingresa un correo electrónico válido.");
       return;
     }
 

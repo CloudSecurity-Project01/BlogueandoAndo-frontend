@@ -3,7 +3,7 @@ import { Card, Container, Row, Col, Badge } from "react-bootstrap";
 import { FaStar, FaEye, FaEyeSlash } from "react-icons/fa";
 import PostModal from "./Modals/PostModal";
 import DOMPurify from "dompurify";
-import { useAuth } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 import "../styles/styles.css";
 
 const PostsList = ({ posts, handleCloseModal, setSelectedPost, selectedPost, handleDeletePost, modalMode, setModalMode }) => {
