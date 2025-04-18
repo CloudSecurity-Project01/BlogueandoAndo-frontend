@@ -32,8 +32,10 @@ Sigue estos pasos para configurar el proyecto en tu entorno local:
 
 ## Documentación
 Para más detalles sobre la arquitectura, funcionalidades y configuración del proyecto, consulta la documentación oficial:
-- [Documentación del proyecto](https://github.com/CloudSecurity-Project01/BlogueandoAndo-frontend/blob/main/Documentaci%C3%B3n%20del%20proyecto.pdf)
-- [Diagrama de arquitectura en GCP](https://github.com/CloudSecurity-Project01/BlogueandoAndo-frontend/blob/main/Arquitectura%20GCP.pdf)
+- [Documentación del proyecto](https://github.com/CloudSecurity-Project01/BlogueandoAndo-frontend/blob/main/Documentacion/Proyecto_01/Documentaci%C3%B3n%20del%20proyecto.pdf)
+- [Configuración seguridad GCP](https://github.com/CloudSecurity-Project01/BlogueandoAndo-frontend/blob/main/Documentacion/Proyecto_02/Documentacion_Proyecto2.pdf)
+   - [Video - Explicación de la configuración](https://uniandes-my.sharepoint.com/:v:/g/personal/df_sanchezm1_uniandes_edu_co/EfyNQMT-eRFDjI1eUxm_g0EB4uNHQ60OvUuPdgAd5F-5VA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=yKeLzf)
+- [Diagrama de arquitectura en GCP](https://github.com/CloudSecurity-Project01/BlogueandoAndo-frontend/blob/main/Documentacion/Proyecto_02/Diagrama_Proyecto2.pdf)
 
 ## Tecnologías utilizadas
 - **Frontend:** React, React Bootstrap, React Router
